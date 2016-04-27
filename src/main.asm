@@ -1,5 +1,5 @@
 global main
-extern vga.~buf, vga._blank, vga._putq, vga._puts
+extern vga.~buf, vga.blank, vga.putq, vga.puts
 %include "vga.mac"
 
 section .rodata
@@ -8,7 +8,13 @@ main.#hello equ $ - main.~hello
 
 section .text
 main:
-  vga.blank vga.GRY << vga.FG
-  vga.putq vga.~buf, 'Hell', 'o, w'
-  vga.puts edi, main.#hello, main.~hello
+  mov ax, vga.GRY << vga.FG
+  call vga.blank
+  mov edi, vga.~buf
+  mov eax, 'Hell'
+  mov edx, 'o, w'
+  call vga.putq
+  mov ecx, main.#hello
+  mov esi, main.~hello
+  call vga.puts
   ret

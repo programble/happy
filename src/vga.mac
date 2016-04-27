@@ -13,25 +13,3 @@
 %define vga.YEL 6
 %define vga.GRY 7
 %define vga.BRI 8
-
-; char : : eax ecx edi
-%macro vga.blank 1
-  mov ax, %1
-  call vga._blank
-%endmacro
-
-; buf str str : edi(buf) : eax edx
-%macro vga.putq 3
-  mov edi, %1
-  mov eax, %2
-  mov edx, %3
-  call vga._putq
-%endmacro
-
-; buf len str : edi(buf) : ecx esi
-%macro vga.puts 3
-  mov edi, %1
-  mov ecx, %2
-  mov esi, %3
-  call vga._puts
-%endmacro
