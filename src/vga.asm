@@ -1,53 +1,47 @@
-global vga.reg, vga.char, vga.attr, vga.offs
-global vga.push, vga.pop, vga.clear, vga.putc, vga.test
+global vga.clear, vga.test
 
 %include "vga.mac"
 %define vga.BUF 0xB8000
 
 section .bss
-vga.stack~ resb 0x100
-vga.stack$:
+vga.~stack: resb 0x100
+vga.$stack:
 
 section .data
-vga.stack@ dd vga.stack$
-vga.reg:
-  vga.char db 0
-  vga.attr db vga.GRY
-  vga.offs dw 0
+vga.@stack: dd vga.$stack
+vga.state:
+  vga.char: db ' '
+  vga.attr: db vga.GRY
+  vga.offs: dw 0
 
 section .text
+; : : eax
 vga.push:
-  mov ebp, esp
-  mov esp, [vga.stack@]
-  push dword [vga.reg]
-  mov [vga.stack@], esp
-  mov esp, ebp
+  mov eax, esp
+  mov esp, [vga.@stack]
+  push dword [vga.state]
+  mov [vga.@stack], esp
+  mov esp, eax
   ret
 
+; : : eax
 vga.pop:
-  mov ebp, esp
-  mov esp, [vga.stack@]
-  pop dword [vga.reg]
-  mov [vga.stack@], esp
-  mov esp, ebp
+  mov eax, esp
+  mov esp, [vga.@stack]
+  pop dword [vga.state]
+  mov [vga.@stack], esp
+  mov esp, eax
   ret
 
+; : : ax ecx edi
 vga.clear:
-  movzx eax, word [vga.char]
-  mov edx, eax
-  shl eax, 16
-  or eax, edx
+  mov ax, [vga.char]
   mov edi, vga.BUF
-  mov ecx, vga.COLS * vga.ROWS / 2
+  mov ecx, vga.COLS * vga.ROWS
   rep stosd
   ret
 
-vga.putc:
-  mov ah, [vga.attr]
-  mov ebx, [vga.offs]
-  mov [vga.BUF + ebx], ax
-  ret
-
+; : : ax ecx edi
 vga.test:
   mov ax, 0xB0
   mov edi, vga.BUF
