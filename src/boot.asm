@@ -2,12 +2,12 @@ global boot, halt
 extern main
 
 section .bss
-stack~ resb 0x1000
-stack$
+boot.~stack: resb 0x1000
+boot.$stack:
 
 section .text
 boot:
-  mov esp, stack$
+  mov esp, boot.$stack
   push halt
   jmp main
 
