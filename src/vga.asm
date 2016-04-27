@@ -1,5 +1,5 @@
 global vga.~buf, vga.$buf, vga.#buf
-global vga.clear, vga.test
+global vga.clear, vga.puts, vga.test
 
 %include "vga.mac"
 vga.~buf equ 0xB8000
@@ -10,6 +10,12 @@ vga.clear: ; ax : : ecx edi
   mov edi, vga.~buf
   mov ecx, vga.#buf
   rep stosw
+  ret
+
+vga.puts: ; ah(attr) ecx(len) esi(str) edi(buf) : edi(buf) : ecx esi
+  lodsb
+  stosw
+  loop vga.puts
   ret
 
 vga.test: ; : : ax ecx edi

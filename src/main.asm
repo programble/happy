@@ -1,7 +1,19 @@
 global main
-extern vga.clear, vga.test
+extern vga.~buf, vga.clear, vga.puts
 
+%include "vga.mac"
+
+section .rodata
+main.~hello db 'Hello, world!'
+main.#hello equ $ - main.~hello
+
+section .text
 main:
+  xor ax, ax
   call vga.clear
-  call vga.test
+  mov ah, vga.RED
+  mov ecx, main.#hello
+  mov esi, main.~hello
+  mov edi, vga.~buf
+  call vga.puts
   ret
