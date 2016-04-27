@@ -1,4 +1,6 @@
-global mboot.boot
+global mboot.boot, mboot.print
+extern fmt.hex, vga.puts
+%include "vga.mac"
 
 MAGIC equ 0x1BADB002
 FLAGS equ 0x0
@@ -9,12 +11,19 @@ dd MAGIC
 dd FLAGS
 dd CHECKSUM
 
-section .bss
-mboot.magic: resd 1
-mboot.@header: resd 1
+section .data
+mboot.@info: dd 0
 
 section .text
 mboot.boot:
-  mov [mboot.magic], eax
-  mov [mboot.@header], ebx
+  cmp eax, 0x2BADB002
+  jne .ret
+  mov [mboot.@info], ebx
+  .ret: ret
+
+mboot.print: ; edi(buf) : edi(buf) : eax ecx edx ebx esi
+  mov eax, [mboot.@info]
+  call fmt.hex
+  mov ah, vga.GRY | vga.BRI
+  call vga.puts
   ret

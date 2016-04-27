@@ -1,6 +1,6 @@
 global main
-extern fmt.hex
 extern vga.~buf, vga.blank, vga.puts, vga.curs
+extern mboot.print
 %include "vga.mac"
 
 section .rodata
@@ -17,10 +17,7 @@ main:
   mov esi, main.~hello
   mov edi, vga.~buf
   call vga.puts
-  mov eax, 0x1A2B3C4D
-  call fmt.hex
-  mov ah, vga.GRN
-  call vga.puts
+  call mboot.print
   mov ah, 0x0D
   call vga.curs
   ret
