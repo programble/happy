@@ -1,5 +1,4 @@
-global mboot.boot, mboot.print
-extern fmt.hex, vga.puts
+global mboot.boot
 %include "vga.mac"
 
 MAGIC equ 0x1BADB002
@@ -20,10 +19,3 @@ mboot.boot:
   jne .ret
   mov [mboot.@info], ebx
   .ret: ret
-
-mboot.print: ; edi(buf) : edi(buf) : eax ecx edx ebx esi
-  mov eax, [mboot.@info]
-  call fmt.hex
-  mov ah, vga.GRY | vga.BRI
-  call vga.puts
-  ret

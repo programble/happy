@@ -13,3 +13,22 @@
 %define vga.YEL 6
 %define vga.GRY 7
 %define vga.BRI 8
+
+%macro vga.blank 1
+  mov ax, %1
+  call vga._blank
+%endmacro
+
+%macro vga.putq 3
+  mov edi, %1
+  mov eax, %2
+  mov edx, %3
+  call vga._putq
+%endmacro
+
+%macro vga.puts 3
+  mov edi, %1
+  mov ecx, %2
+  mov esi, %3
+  call vga._puts
+%endmacro
