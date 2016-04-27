@@ -7,7 +7,7 @@ NASM_FLAGS = -f elf32 -i src/ -g
 QEMU_FLAGS =
 
 LD_SCRIPT = friendship.ld
-OBJECTS = out/obj/boot.o
+OBJECTS = out/obj/multiboot.o out/obj/boot.o
 KERNEL = out/happy.elf
 
 kernel: $(KERNEL)
