@@ -1,8 +1,12 @@
 global main
-extern vga.clear, vga.test
+extern vga.char, vga.offs, vga.clear, vga.putc
+
+%include "vga.mac"
 
 main:
-  xor ax, ax
+  mov byte [vga.char], 'A'
   call vga.clear
-  call vga.test
+  vga.pos 1, 3
+  mov al, 'B'
+  call vga.putc
   ret

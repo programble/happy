@@ -13,3 +13,7 @@
 %define vga.YEL 6
 %define vga.GRY 7
 %define vga.BRI 8
+
+%macro vga.pos 2
+  mov word [vga.offs], %2 * vga.COLS * 2 + %1 * 2
+%endmacro
