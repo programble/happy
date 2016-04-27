@@ -1,0 +1,15 @@
+%define vga.COLS 80
+%define vga.ROWS 25
+
+%define vga.FG 8
+%define vga.BG 12
+
+%define vga.BLK 0
+%define vga.BLU 1
+%define vga.GRN 2
+%define vga.CYN 3
+%define vga.RED 4
+%define vga.MAG 5
+%define vga.YEL 6
+%define vga.GRY 7
+%define vga.BRI 8
