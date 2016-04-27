@@ -1,50 +1,20 @@
+global vga.~buf, vga.$buf, vga.#buf
 global vga.clear, vga.test
 
 %include "vga.mac"
-%define vga.BUF 0xB8000
+vga.~buf equ 0xB8000
+vga.#buf equ vga.COLS * vga.ROWS * 2
+vga.$buf equ vga.~buf + vga.#buf
 
-section .bss
-vga.~stack: resb 0x100
-vga.$stack:
-
-section .data
-vga.@stack: dd vga.$stack
-vga.state:
-  vga.char: db ' '
-  vga.attr: db vga.GRY
-  vga.offs: dw 0
-
-section .text
-; : : eax
-vga.push:
-  mov eax, esp
-  mov esp, [vga.@stack]
-  push dword [vga.state]
-  mov [vga.@stack], esp
-  mov esp, eax
+vga.clear: ; ax : : ecx edi
+  mov edi, vga.~buf
+  mov ecx, vga.#buf
+  rep stosw
   ret
 
-; : : eax
-vga.pop:
-  mov eax, esp
-  mov esp, [vga.@stack]
-  pop dword [vga.state]
-  mov [vga.@stack], esp
-  mov esp, eax
-  ret
-
-; : : ax ecx edi
-vga.clear:
-  mov ax, [vga.char]
-  mov edi, vga.BUF
-  mov ecx, vga.COLS * vga.ROWS
-  rep stosd
-  ret
-
-; : : ax ecx edi
-vga.test:
+vga.test: ; : : ax ecx edi
   mov ax, 0xB0
-  mov edi, vga.BUF
+  mov edi, vga.~buf
   mov ecx, 0x100
   .rep1:
     stosw
