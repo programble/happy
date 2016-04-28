@@ -1,3 +1,5 @@
+%define vga.BUF 0xB8000
+
 %define vga.COLS 80
 %define vga.ROWS 25
 

@@ -1,9 +1,15 @@
 global main
-extern vga.~buf, vga.blank
+extern tty.reset, tty.print
 %include "vga.mac"
+
+section .rodata
+main.~hello: db `Hello, world!\na\tb\naa\tbb\nfoo\rbar\bz`
+main.#hello equ $ - main.~hello
 
 section .text
 main:
-  mov ax, vga.GRY << vga.FG
-  call vga.blank
+  call tty.reset
+  mov ecx, main.#hello
+  mov esi, main.~hello
+  call tty.print
   ret
