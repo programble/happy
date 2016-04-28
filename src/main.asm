@@ -9,7 +9,9 @@ main.#hello equ $ - main.~hello
 section .text
 main:
   call tty.reset
+  .rep:
   mov ecx, main.#hello
   mov esi, main.~hello
   call tty.print
+  jmp .rep
   ret
