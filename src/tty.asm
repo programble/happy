@@ -1,37 +1,15 @@
-global tty.push, tty.pop, tty.reset, tty.lf, tty.cr, tty.print
+global tty.reset, tty.lf, tty.cr, tty.print
 extern vga.~buf, vga.$buf, vga.blank, vga.scroll
 %include "vga.mac"
 
-section .bss
-tty.~stack: resb 0x100
-tty.$stack:
-
 section .data
 tty.@buf: dd vga.~buf
-tty.@stack: dd tty.~stack
 
 section .text
-tty.push: ; : : eax edx
-  mov eax, [tty.@stack]
-  sub eax, 4
-  mov edx, [tty.@buf]
-  mov [eax], edx
-  mov [tty.@stack], eax
-  ret
-
-tty.pop: ; : : eax edx
-  mov eax, [tty.@stack]
-  mov edx, [eax]
-  mov [tty.@buf], edx
-  add eax, 4
-  mov [tty.@stack], eax
-  ret
-
 tty.reset: ; : : ax ecx edi
   mov ax, vga.GRY << vga.FG
   call vga.blank
   mov dword [tty.@buf], vga.~buf
-  mov dword [tty.@stack], tty.~stack
   ret
 
 tty._lf:
