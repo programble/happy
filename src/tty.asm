@@ -37,44 +37,43 @@ tty.reset: ; : : ax ecx edi
 tty.print: ; ecx(len) esi(str) : : eax ecx edx ebx esi edi
   mov edi, [tty.@buf]
   .rep:
-  cmp edi, vga.$buf
-  jb .lods
-  pushad
-  call vga.scroll
-  popad
-  mov edi, vga.$buf - vga.COLS
-  .lods:
-    lodsb
-  .b:
-    cmp al, `\b`
-    jne .t
-    sub edi, 2
-    mov byte [edi], ' '
-    jmp .loop
-  .t:
-    cmp al, `\t`
-    jne .n
-    add edi, 0x10
-    and edi, -0x0F
-    jmp .loop
-  .n:
-    cmp al, `\n`
-    jne .r
-    add edi, vga.COLS
-    mov al, `\r`
-  .r:
-    cmp al, `\r`
-    jne .stos
-    lea eax, [edi - vga.BUF]
-    xor edx, edx
-    mov ebx, vga.COLS
-    div ebx
-    sub edi, edx
-    jmp .loop
-  .stos:
-    stosb
-    inc edi
-  .loop:
-  loop .rep
+    cmp edi, vga.$buf
+    jb .lods
+    pushad
+    call vga.scroll
+    popad
+    mov edi, vga.$buf - vga.COLS
+    .lods:
+      lodsb
+    .bs:
+      cmp al, `\b`
+      jne .ht
+      sub edi, 2
+      mov byte [edi], ' '
+      jmp .loop
+    .ht:
+      cmp al, `\t`
+      jne .lf
+      add edi, 0x10
+      and edi, -0x0F
+      jmp .loop
+    .lf:
+      cmp al, `\n`
+      jne .cr
+      add edi, vga.COLS
+      mov al, `\r`
+    .cr:
+      cmp al, `\r`
+      jne .stos
+      lea eax, [edi - vga.BUF]
+      xor edx, edx
+      mov ebx, vga.COLS
+      div ebx
+      sub edi, edx
+      jmp .loop
+    .stos:
+      stosb
+      inc edi
+  .loop: loop .rep
   mov [tty.@buf], edi
   ret
