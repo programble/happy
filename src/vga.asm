@@ -1,5 +1,5 @@
-global vga.~buf, vga.$buf, vga.#buf
-global vga.blank, vga.scroll, vga.puts, vga.putz
+global vga.~buf, vga.$buf, vga.#buf, vga.@buf, vga.attr
+global vga.blank, vga.scroll
 %include "vga.mac"
 
 absolute vga.BUF
@@ -7,37 +7,30 @@ vga.~buf: resb vga.COLS * vga.ROWS
 vga.$buf:
 vga.#buf equ $ - vga.~buf
 
+section .data
+vga.@buf: dd vga.~buf
+vga.attr: dw 0
+
 section .text
-vga.blank: ; ax : : ecx edi
+vga.blank: ; : : eax ecx edi
+  mov ax, [vga.attr]
+  shl eax, 0x10
+  mov ax, [vga.attr]
   mov edi, vga.~buf
-  mov ecx, vga.#buf
-  rep stosw
+  mov [vga.@buf], edi
+  mov ecx, vga.#buf / 4
+  rep stosd
   ret
 
-vga.scroll: ; : : al ecx esi edi
+vga.scroll: ; : : eax ecx esi edi
   mov edi, vga.~buf
   mov esi, vga.~buf + vga.COLS
   mov ecx, (vga.ROWS - 1) * vga.COLS / 4
   rep movsd
-  xor al, al
-  mov ecx, vga.COLS / 2
-  .rep:
-    stosb
-    inc edi
-  loop .rep
+  mov ax, [vga.attr]
+  shl eax, 0x10
+  mov ax, [vga.attr]
+  mov ecx, vga.COLS / 4
+  rep stosd
+  sub dword [vga.@buf], vga.COLS
   ret
-
-vga.puts: ; ecx(len) esi(str) edi(buf) : edi(buf) : ecx esi
-  movsb
-  inc edi
-  loop vga.puts
-  ret
-
-vga.putz: ; esi(str) edi(buf) : edi(buf) : esi
-  lodsb
-  test al, al
-  jz .ret
-  stosb
-  inc edi
-  jmp vga.putz
-  .ret: ret

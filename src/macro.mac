@@ -1,0 +1,13 @@
+%macro mpush 1-*
+  %rep %0
+    push %1
+  %rotate 1
+  %endrep
+%endmacro
+
+%macro mpop 1-*
+  %rep %0
+  %rotate -1
+    push %1
+  %endrep
+%endmacro
