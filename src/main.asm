@@ -4,7 +4,7 @@ extern fmt.bin, fmt.hex
 %include "vga.mac"
 
 section .rodata
-main.~hello: db 'Hello, world! ', 0
+main.~hello: db `Hello, world!\na\tb\naa\tbb\nfoo\rbar\bz`, 0
 
 section .text
 main:
