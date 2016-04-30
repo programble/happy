@@ -1,76 +1,75 @@
 global gdt.init
 
-struc gdt.Gdt
-  .limit: resw 1
-  .base: resd 1
-endstruc
+Type.A equ 0b0000_0001
+Type.W equ 0b0000_0010
+Type.E equ 0b0000_0100
+Type.R equ 0b0000_0010
+Type.C equ 0b0000_0100
+Type.DATA equ 0b0000_0000
+Type.CODE equ 0b0000_1000
 
-struc gdt.Entry
+Access.S equ 0b0001_0000
+Access.DPL0 equ 0b0000_0000
+Access.DPL1 equ 0b0010_0000
+Access.DPL2 equ 0b0100_0000
+Access.DPL3 equ 0b0110_0000
+Access.P equ 0b1000_0000
+
+Flags.L equ 0b0010_0000
+Flags.D equ 0b0100_0000
+Flags.B equ 0b0100_0000
+Flags.G equ 0b1000_0000
+
+struc Entry
   .limit_lo: resw 1
   .base_lo: resw 1
   .base_mi: resb 1
-  .access: resb 1
+  .type_access: resb 1
   .limit_hi_flags: resb 1
   .base_hi: resb 1
 endstruc
 
-gdt.Access equ 0x10
-gdt.Access.AC equ 1
-gdt.Access.RW equ 2
-gdt.Access.DC equ 4
-gdt.Access.EX equ 8
-gdt.Access.PR equ 0x80
-gdt.Access.Privl equ 5
+struc Gdt
+  .limit: resw 1
+  .base: resd 1
+endstruc
 
-gdt.Flags.SZ_32 equ 0x40
-gdt.Flags.GR_PAGE equ 0x80
-
-section .data
-gdt.gdt:
-  istruc gdt.Gdt
-    at gdt.Gdt.limit, dw gdt.#entries - 1
-    at gdt.Gdt.base, dd gdt.~entries
-  iend
-
+section .rodata
 gdt.~entries:
-  .null:
-    istruc gdt.Entry
-      at gdt.Entry.limit_lo, dw 0
-      at gdt.Entry.base_lo, dw 0
-      at gdt.Entry.base_mi, db 0
-      at gdt.Entry.access, db 0
-      at gdt.Entry.limit_hi_flags, db 0
-      at gdt.Entry.base_hi, db 0
-    iend
+  .null: dq 0
   .code:
-    istruc gdt.Entry
-      at gdt.Entry.limit_lo, dw 0xFFFF
-      at gdt.Entry.base_lo, dw 0
-      at gdt.Entry.base_mi, db 0
-      at gdt.Entry.access, db gdt.Access | gdt.Access.RW | gdt.Access.EX | gdt.Access.PR
-      at gdt.Entry.limit_hi_flags, db 0xF | gdt.Flags.SZ_32 | gdt.Flags.GR_PAGE
-      at gdt.Entry.base_hi, db 0
+    istruc Entry
+      at Entry.limit_lo, dw 0xFFFF
+      at Entry.base_lo, dw 0
+      at Entry.base_mi, db 0
+      at Entry.type_access, db Type.CODE | Type.R | Access.S | Access.DPL0 | Access.P
+      at Entry.limit_hi_flags, db 0xF | Flags.D | Flags.G
+      at Entry.base_hi, db 0
     iend
   .data:
-    istruc gdt.Entry
-      at gdt.Entry.limit_lo, dw 0xFFFF
-      at gdt.Entry.base_lo, dw 0
-      at gdt.Entry.base_mi, db 0
-      at gdt.Entry.access, db gdt.Access | gdt.Access.RW | gdt.Access.PR
-      at gdt.Entry.limit_hi_flags, db 0xF | gdt.Flags.SZ_32 | gdt.Flags.GR_PAGE
-      at gdt.Entry.base_hi, db 0
+    istruc Entry
+      at Entry.limit_lo, dw 0xFFFF
+      at Entry.base_lo, dw 0
+      at Entry.base_mi, db 0
+      at Entry.type_access, db Type.DATA | Type.W | Access.S | Access.DPL0 | Access.P
+      at Entry.limit_hi_flags, db 0xF | Flags.B | Flags.G
+      at Entry.base_hi, db 0
     iend
 gdt.#entries equ $ - gdt.~entries
+gdt.gdt:
+  istruc Gdt
+    at Gdt.limit, dw gdt.#entries - 1
+    at Gdt.base, dd gdt.~entries
+  iend
 
 section .text
 gdt.init: ; : : ax
   lgdt [gdt.gdt]
-  mov ax, gdt.~entries.data - gdt.~entries
+  mov eax, gdt.~entries.data - gdt.~entries
   mov ds, ax
   mov es, ax
   mov fs, ax
   mov gs, ax
   mov ss, ax
   jmp (gdt.~entries.code - gdt.~entries):.ret
-  .ret:
-  ret
+  .ret: ret
