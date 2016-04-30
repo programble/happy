@@ -8,7 +8,7 @@ fmt.~out: db '00000000000000000000000000000000', 0
 fmt.$out:
 
 section .text
-fmt.bin: ; eax : esi : al edi
+fmt.bin: ; eax : esi : al ecx edi
   mov esi, eax
   mov ecx, 0x20
   mov edi, fmt.$out - 1
@@ -23,16 +23,15 @@ fmt.bin: ; eax : esi : al edi
   mov esi, edi
   ret
 
-fmt.hex: ; eax : ecx esi : eax edx ebx
+fmt.hex: ; eax : esi : eax ecx edx ebx
   mov ebx, 0x10
   mov ecx, 8
   mov esi, fmt.$out
-  .rep:
+  .for:
     xor edx, edx
     div ebx
     mov edx, [fmt.dig + edx]
     dec esi
     mov [esi], dl
-  loop .rep
-  mov cl, 8
+  loop .for
   ret
