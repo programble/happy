@@ -28,7 +28,7 @@ gdt.Flags.GR_PAGE equ 0x80
 section .data
 gdt.gdt:
   istruc gdt.Gdt
-    at gdt.Gdt.limit, dw gdt.#entries
+    at gdt.Gdt.limit, dw gdt.#entries - 1
     at gdt.Gdt.base, dd gdt.~entries
   iend
 
