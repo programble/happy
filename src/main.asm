@@ -1,5 +1,6 @@
 global main
 extern vga.attr, vga.blank, vga.cursor, vga.printc, vga.prints
+extern fmt.bin
 %include "vga.mac"
 
 section .rodata
@@ -17,4 +18,9 @@ main:
   call vga.prints
   mov al, '!'
   call vga.printc
+  mov al, ' '
+  call vga.printc
+  mov eax, 0x1F2E3D4C
+  call fmt.bin
+  call vga.prints
   ret

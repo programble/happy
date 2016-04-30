@@ -4,23 +4,22 @@ section .rodata
 fmt.dig: db '0123456789ABCDEF'
 
 section .data
-fmt.~out: db '00000000000000000000000000000000'
+fmt.~out: db '00000000000000000000000000000000', 0
 fmt.$out:
 
 section .text
-fmt.bin: ; eax : ecx esi : al edx edi
-  mov edx, eax
+fmt.bin: ; eax : esi : al edi
+  mov esi, eax
   mov ecx, 0x20
-  mov edi, fmt.$out
+  mov edi, fmt.$out - 1
   std
-  .rep:
-    shr edx, 1
+  .for:
+    shr esi, 1
     setc al
     add al, '0'
     stosb
-  loop .rep
+  loop .for
   cld
-  mov cl, 0x20
   mov esi, edi
   ret
 
