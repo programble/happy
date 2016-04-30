@@ -1,5 +1,5 @@
 global vga.~buf, vga.$buf, vga.#buf, vga.@buf, vga.attr
-global vga.blank, vga.scroll, vga.printc, vga.prints
+global vga.blank, vga.cursor, vga.printc, vga.prints
 %include "vga.mac"
 
 absolute vga.BUF
@@ -22,7 +22,7 @@ vga.blank: ; : : eax ecx edi
   rep stosd
   ret
 
-vga.scroll: ; : : eax ecx esi edi
+vga._scroll: ; : : eax ecx esi edi
   mov edi, vga.~buf
   mov esi, vga.~buf + vga.COLS
   mov ecx, (vga.ROWS - 1) * vga.COLS / 4
@@ -33,6 +33,16 @@ vga.scroll: ; : : eax ecx esi edi
   mov ecx, vga.COLS / 4
   rep stosd
   sub dword [vga.@buf], vga.COLS
+  ret
+
+vga.cursor: ; al : : ah dx
+  mov dx, 0x3D4
+  mov ah, al
+  mov al, 0x0A
+  out dx, al
+  inc dx
+  mov al, ah
+  out dx, al
   ret
 
 vga.printc: ; al : : ax edi

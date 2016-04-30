@@ -1,5 +1,5 @@
 global main
-extern vga.attr, vga.blank, vga.printc, vga.prints
+extern vga.attr, vga.blank, vga.cursor, vga.printc, vga.prints
 %include "vga.mac"
 
 section .rodata
@@ -9,6 +9,8 @@ section .text
 main:
   mov word [vga.attr], vga.GRY << vga.FG | vga.BLU << vga.BG
   call vga.blank
+  xor al, al
+  call vga.cursor
   mov al, 'H'
   call vga.printc
   mov esi, main.~hello

@@ -40,7 +40,7 @@ tty.print: ; ecx(len) esi(str) : : eax ecx edx ebx esi edi
     cmp edi, vga.$buf
     jb .lods
     pushad
-    call vga.scroll
+    ;call vga.scroll
     popad
     mov edi, vga.$buf - vga.COLS
     .lods:
