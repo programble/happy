@@ -64,23 +64,60 @@ vga._cursor: ; edi : : ax dx edi
   out dx, al
   ret
 
-vga.printc: ; al : : ax dx edi
+%macro vga._cc 1
+  %%bs:
+    cmp al, `\b`
+    jne %%ht
+    sub edi, 2
+    mov byte [edi], ' '
+    jmp %1
+  %%ht:
+    cmp al, `\t`
+    jne %%lf
+    add edi, 0x10
+    and edi, -0xF
+    jmp %1
+  %%lf:
+    cmp al, `\n`
+    jne %%cr
+    add edi, vga.COLS
+    jmp %%_cr
+  %%cr:
+    cmp al, `\r`
+    jne %%else
+    %%_cr:
+    push eax
+    lea eax, [edi - vga.~buf]
+    xor edx, edx
+    mov edi, vga.COLS
+    div edi
+    mul edi
+    lea edi, [eax + vga.~buf]
+    pop eax
+    jmp %1
+  %%else:
+%endmacro
+
+vga.printc: ; al : : ax edx edi
   xor ah, ah
   or ax, [vga.attr]
   mov edi, [vga.@buf]
+  vga._cc .next
   stosw
+  .next:
   mov [vga.@buf], edi
   jmp vga._cursor
 
-vga.prints: ; esi(str) : : ax dx esi edi
+vga.prints: ; esi(str) : : ax edx esi edi
   mov edi, [vga.@buf]
   mov ax, [vga.attr]
   .while:
     lodsb
     test al, al
     jz .break
+    vga._cc .next
     stosw
-  jmp .while
+  .next: jmp .while
   .break:
   mov [vga.@buf], edi
   jmp vga._cursor
