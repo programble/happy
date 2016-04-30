@@ -20,7 +20,8 @@ vga.blank: ; : : eax ecx edi
   mov [vga.@buf], edi
   mov ecx, vga.#buf / 4
   rep stosd
-  ret
+  mov edi, vga.~buf
+  jmp vga._cursor
 
 vga._scroll: ; : : eax ecx esi edi
   mov edi, vga.~buf
@@ -45,15 +46,33 @@ vga.cursor: ; al : : ah dx
   out dx, al
   ret
 
-vga.printc: ; al : : ax edi
+vga._cursor: ; edi : : ax dx edi
+  sub edi, vga.~buf
+  shr di, 1
+  mov dx, 0x3D4
+  mov al, 0xE
+  out dx, al
+  inc dx
+  mov ax, di
+  shr ax, 8
+  out dx, al
+  dec dx
+  mov al, 0xF
+  out dx, al
+  inc dx
+  mov ax, di
+  out dx, al
+  ret
+
+vga.printc: ; al : : ax dx edi
   xor ah, ah
   or ax, [vga.attr]
   mov edi, [vga.@buf]
-  mov [edi], ax
-  add dword [vga.@buf], 2
-  ret
+  stosw
+  mov [vga.@buf], edi
+  jmp vga._cursor
 
-vga.prints: ; esi(str) : : ax esi edi
+vga.prints: ; esi(str) : : ax dx esi edi
   mov edi, [vga.@buf]
   mov ax, [vga.attr]
   .while:
@@ -64,4 +83,4 @@ vga.prints: ; esi(str) : : ax esi edi
   jmp .while
   .break:
   mov [vga.@buf], edi
-  ret
+  jmp vga._cursor
