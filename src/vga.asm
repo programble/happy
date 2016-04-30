@@ -1,5 +1,6 @@
 global vga.~buf, vga.$buf, vga.#buf, vga.@buf, vga.attr
-global vga.blank, vga.cursor, vga.printc, vga.prints
+global vga.blank, vga.cursor, vga.print
+%include "macro.mac"
 %include "vga.mac"
 
 absolute vga.BUF
@@ -98,26 +99,36 @@ vga._cursor: ; edi : : ax dx edi
   %%else:
 %endmacro
 
-vga.printc: ; al : : ax edx edi
-  xor ah, ah
-  or ax, [vga.attr]
-  mov edi, [vga.@buf]
-  vga._cc .next
-  stosw
-  .next:
-  mov [vga.@buf], edi
-  jmp vga._cursor
-
-vga.prints: ; esi(str) : : ax edx esi edi
+vga.print: ; esi(str) : : ax ecx edx esi edi
   mov edi, [vga.@buf]
   mov ax, [vga.attr]
+
   .while:
+    cmp edi, vga.$buf
+    jb .lods
+
+    .asdf:
+    mpush eax, esi, edi
+    mov edi, vga.~buf
+    mov esi, vga.~buf + vga.COLS
+    mov ecx, (vga.ROWS - 1) * vga.COLS / 4
+    rep movsd
+    mov ax, [vga.attr]
+    shl eax, 0x10
+    mov ax, [vga.attr]
+    mov ecx, vga.COLS / 4
+    rep stosd
+    pop edi
+    sub edi, vga.COLS
+    mpop eax, esi
+
+    .lods:
     lodsb
     test al, al
     jz .break
-    vga._cc .next
     stosw
-  .next: jmp .while
+  jmp .while
+
   .break:
   mov [vga.@buf], edi
   jmp vga._cursor

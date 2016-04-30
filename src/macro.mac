@@ -8,6 +8,6 @@
 %macro mpop 1-*
   %rep %0
   %rotate -1
-    push %1
+    pop %1
   %endrep
 %endmacro
