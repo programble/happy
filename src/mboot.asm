@@ -2,15 +2,6 @@ global mboot.boot, mboot.print
 extern fmt.bin, fmt.hex, vga.print
 %include "vga.mac"
 
-mboot.MAGIC equ 0x1BADB002
-mboot.FLAGS equ 0x0
-mboot.CHECKSUM equ -(mboot.MAGIC + mboot.FLAGS)
-
-section .mboot
-dd mboot.MAGIC
-dd mboot.FLAGS
-dd mboot.CHECKSUM
-
 struc mboot.Info
   .flags: resd 1
   .mem_lower: resd 1
