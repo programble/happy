@@ -1,10 +1,7 @@
 global main
-extern vga.attr, vga.blank, vga.cursor, vga.print
-extern fmt.bin, fmt.hex
+extern vga.attr, vga.blank, vga.cursor
+extern mboot.print
 %include "vga.mac"
-
-section .rodata
-main.~hello: db `Hello, world!\na\tb\naa\tbb\nfoo\rbar\bz`, 0
 
 section .text
 main:
@@ -12,8 +9,5 @@ main:
   call vga.blank
   xor al, al
   call vga.cursor
-  .loop:
-    mov esi, main.~hello
-    call vga.print
-  jmp .loop
+  call mboot.print
   ret
