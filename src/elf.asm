@@ -84,6 +84,8 @@ elf.init: ; ecx(shdr_num) ebx(shdr_addr) : : eax ecx ebx
   ret
 
 elf.sym: ; eax(val) : ecx(offset) esi(name) : eax
+  cmp dword [elf.$symtab], 0
+  je .null
   .owhile:
     mov ebx, [elf.@symtab]
     .swhile:
