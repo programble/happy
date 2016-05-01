@@ -19,6 +19,7 @@ KERNEL = out/happy.elf
 LD_SCRIPT = friendship.ld
 SOURCES = $(wildcard src/*.asm)
 OBJECTS = $(SOURCES:src/%.asm=out/obj/%.o)
+DEPS = $(SOURCES:src/%.asm=out/dep/%.mk)
 ISO = out/happy.iso
 STAGE2 = stage2_eltorito
 MENU_LST = menu.lst
@@ -29,9 +30,11 @@ $(KERNEL): $(LD_SCRIPT) $(OBJECTS)
 	@mkdir -p out
 	$(LD) $(LD_FLAGS) -o $@ -T $(LD_SCRIPT) $(OBJECTS)
 
+-include $(DEPS)
+
 out/obj/%.o: src/%.asm
-	@mkdir -p out/obj
-	$(NASM) $(NASM_FLAGS) -o $@ $<
+	@mkdir -p out/obj out/dep
+	$(NASM) $(NASM_FLAGS) -MD $(@:out/obj/%.o=out/dep/%.mk) -o $@ $<
 
 iso: $(ISO)
 
