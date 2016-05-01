@@ -1,5 +1,5 @@
 global _panic
-extern boot.$stack, fmt.bin, fmt.dec, fmt.hex, vga.attr, vga.print
+extern boot.$stack, elf.sym, fmt.bin, fmt.dec, fmt.hex, vga.attr, vga.print
 %include "vga.mac"
 
 struc Pushad, -0x1C
@@ -68,20 +68,37 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   _reg ' edi ', edi
   add esp, 0x20
 
-  string `\n`
-  call vga.print
   and esp, -4
   .while:
+    string `\n`
+    call vga.print
+
     mov eax, esp
     call fmt.hex
     call vga.print
     string ' '
     call vga.print
+
     mov eax, [esp]
     call fmt.hex
     call vga.print
-    string `\n`
+    string ' '
     call vga.print
+
+    mov eax, [esp]
+    call elf.sym
+    test esi, esi
+    jz .next
+    push esi
+    mov eax, ecx
+    call fmt.hex
+    call vga.print
+    string '+'
+    call vga.print
+    pop esi
+    call vga.print
+
+    .next:
     add esp, 4
   cmp esp, boot.$stack
   jb .while

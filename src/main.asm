@@ -12,13 +12,14 @@ main:
   call vga.cursor
   string `Hello, world!\n`
   call vga.print
-  mov eax, $
-  call elf.sym
-  push ecx
-  call vga.print
-  string '+'
-  call vga.print
-  pop eax
-  call fmt.dec
-  call vga.print
+  call main.foo
   ret
+
+main.foo:
+  call main.bar
+  ret
+main.bar:
+  call main.baz
+  ret
+main.baz:
+  panic 'stack symbol lookup test'
