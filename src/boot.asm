@@ -1,5 +1,5 @@
 global boot.~stack, boot.$stack, boot
-extern mboot.boot, gdt.init, idt.init, main
+extern mboot.boot, gdt.init, idt.init, abort.init, main
 %include "macro.mac"
 %include "vga.mac"
 
@@ -23,9 +23,11 @@ boot.$stack:
 section .text
 boot:
   mov esp, boot.$stack
+  push dword 0xDEADBEEF
   call mboot.boot
   call gdt.init
   call idt.init
-  push dword 0xDEADBEEF
+  call abort.init
+  sti
   call main
   panic 'return from main'

@@ -1,4 +1,5 @@
 global idt.init, idt.int, idt.trap
+%include "macro.mac"
 
 Gate.INTERRUPT equ 0b0000_0110
 Gate.TRAP equ 0b0000_0111
