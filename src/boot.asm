@@ -1,6 +1,6 @@
-global boot, halt, _panic
+global boot.~stack, boot.$stack, boot
 extern mboot.boot, gdt.init, idt.init, main
-extern vga.attr, vga.print, fmt.dec
+%include "macro.mac"
 %include "vga.mac"
 
 MAGIC equ 0x1BADB002
@@ -16,34 +16,12 @@ section .bss
 boot.~stack: resb 0x1000
 boot.$stack:
 
-section .rodata
-boot.?panic: db `\n== PANIC ==\n`, 0
-
 section .text
 boot:
   mov esp, boot.$stack
   call mboot.boot
   call gdt.init
   call idt.init
-  push halt
-  jmp main
-
-halt:
-  hlt
-  jmp halt
-
-_panic: ; eax(msg) ecx(line) edx(file) : :
-  push ecx
-  push edx
-  push eax
-  mov word [vga.attr], vga.GRY << vga.FG | vga.RED << vga.BG
-  mov esi, boot.?panic
-  call vga.print
-  pop esi
-  call vga.print
-  pop esi
-  call vga.print
-  pop eax
-  call fmt.dec
-  call vga.print
-  jmp halt
+  push dword 0xDEADBEEF
+  call main
+  panic 'return from main'

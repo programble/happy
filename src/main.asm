@@ -11,5 +11,4 @@ main:
   xor al, al
   call vga.cursor
   call mboot.print
-  panic 'Help me'
   ret

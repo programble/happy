@@ -19,9 +19,14 @@ extern _panic
   %%file: db __FILE__, ':', 0
 
   __SECT__
-  mov eax, %%msg
+  %%eip:
+  cli
+  pushfd
+  pushad
+  mov eax, %%eip
   mov ecx, __LINE__
   mov edx, %%file
+  mov esi, %%msg
   jmp _panic
 %endmacro
 
