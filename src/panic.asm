@@ -86,6 +86,8 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
     call vga.print
 
     mov eax, [esp]
+    cmp eax, 0x00100000
+    jb .next
     call elf.sym
     test esi, esi
     jz .next
