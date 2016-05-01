@@ -12,6 +12,13 @@
   %endrep
 %endmacro
 
+%macro string 1
+  [section .rodata]
+  %%str: db %1, 0
+  __SECT__
+  mov esi, %%str
+%endmacro
+
 extern _panic
 %macro panic 1
   [section .rodata]

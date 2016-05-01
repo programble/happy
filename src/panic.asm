@@ -13,25 +13,18 @@ struc Pushad, -0x1C
   .edi: resd 1
 endstruc
 
-section .rodata
-panic.?panic: db `\n== PANIC ==\n`, 0
-panic.?file: db ':', 0
-panic.?eflags: db `\neflags `, 0
-panic.?eax: db `\neax `, 0
-panic.?ecx: db ' ecx ', 0
-panic.?edx: db ' edx ', 0
-panic.?ebx: db ' ebx ', 0
-panic.?esp: db `\nesp `, 0
-panic.?ebp: db ' ebp ', 0
-panic.?esi: db ' esi ', 0
-panic.?edi: db ' edi ', 0
-panic.?space: db ' ', 0
-panic.?newline: db `\n`, 0
+; Including macro.mac would conflict.
+%macro string 1
+  [section .rodata]
+  %%str: db %1, 0
+  __SECT__
+  mov esi, %%str
+%endmacro
 
-%macro _reg 1
-  mov esi, panic.?%1
+%macro _reg 2
+  string %1
   call vga.print
-  mov eax, [esp - Pushad.%1]
+  mov eax, [esp - Pushad.%2]
   call fmt.hex
   call vga.print
 %endmacro
@@ -43,14 +36,14 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   push eax
   push esi
   mov word [vga.attr], vga.RED << vga.FG
-  mov esi, panic.?panic
+  string `\n== PANIC ==\n`
   call vga.print
   pop esi
   call vga.print
   pop eax
   call fmt.hex
   call vga.print
-  mov esi, panic.?file
+  string ':'
   call vga.print
   pop esi
   call vga.print
@@ -58,36 +51,36 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   call fmt.dec
   call vga.print
 
-  mov esi, panic.?eflags
+  string `\neflags `
   call vga.print
   mov eax, [esp]
   call fmt.bin
   call vga.print
   add esp, 4
 
-  _reg eax
-  _reg ecx
-  _reg edx
-  _reg ebx
-  _reg esp
-  _reg ebp
-  _reg esi
-  _reg edi
+  _reg `\neax `, eax
+  _reg ' ecx ', ecx
+  _reg ' edx ', edx
+  _reg ' ebx ', ebx
+  _reg `\nesp `, esp
+  _reg ' ebp ', ebp
+  _reg ' esi ', esi
+  _reg ' edi ', edi
   add esp, 0x20
 
-  mov esi, panic.?newline
+  string `\n`
   call vga.print
   and esp, -4
   .while:
     mov eax, esp
     call fmt.hex
     call vga.print
-    mov esi, panic.?space
+    string ' '
     call vga.print
     mov eax, [esp]
     call fmt.hex
     call vga.print
-    mov esi, panic.?newline
+    string `\n`
     call vga.print
     add esp, 4
   cmp esp, boot.$stack

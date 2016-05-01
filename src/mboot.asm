@@ -1,5 +1,6 @@
 global mboot.boot, mboot.print
 extern fmt.bin, fmt.hex, vga.print
+%include "macro.mac"
 %include "vga.mac"
 
 Flags.MEM equ 1
@@ -44,33 +45,6 @@ endstruc
 section .data
 mboot.@info: dd 0
 
-section .rodata
-mboot.?info: db `mboot.@info\t\t`, 0
-mboot.?flags: db `\nflags\t\t\t`, 0
-mboot.?mem_lower: db `\nmem_lower\t\t`, 0
-mboot.?mem_upper: db `\nmem_upper\t\t`, 0
-mboot.?boot_device: db `\nboot_device\t\t`, 0
-mboot.?cmdline: db `\ncmdline\t\t\t`, 0
-mboot.?mods_count: db `\nmods_count\t\t`, 0
-mboot.?mods_addr: db `\nmods_addr\t\t`, 0
-mboot.?shdr_num: db `\nshdr_num\t\t`, 0
-mboot.?shdr_size: db `\nshdr_size\t\t`, 0
-mboot.?shdr_addr: db `\nshdr_addr\t\t`, 0
-mboot.?shdr_shndx: db `\nshdr_shndx\t\t`, 0
-mboot.?mmap_length: db `\nmmap_length\t\t`, 0
-mboot.?mmap_addr: db `\nmmap_addr\t\t`, 0
-mboot.?drives_length: db `\ndrives_length\t\t`, 0
-mboot.?drives_addr: db `\ndrives_addr\t\t`, 0
-mboot.?config_table: db `\nconfig_table\t\t`, 0
-mboot.?boot_loader_name: db `\nboot_loader_name\t`, 0
-mboot.?apm_table: db `\napm_table\t\t`, 0
-mboot.?vbe_control_info: db `\nvbe_control_info\t`, 0
-mboot.?vbe_mode_info: db `\nvbe_mode_info\t`, 0
-mboot.?vbe_mode: db `\nvbe_mode\t\t`, 0
-mboot.?vbe_interface_seg: db `\nvbe_interface_seg\t`, 0
-mboot.?vbe_interface_off: db `\nvbe_interface_off\t`, 0
-mboot.?vbe_interface_len: db `\nvbe_interface_len\t`, 0
-
 section .text
 mboot.boot:
   cmp eax, 0x2BADB002
@@ -79,22 +53,22 @@ mboot.boot:
   .ret: ret
 
 %macro _print 2
-  mov esi, %1
+  string %1
   call vga.print
   mov eax, [ebp + %2]
   call fmt.hex
   call vga.print
 %endmacro
 
-mboot.print: ; : : eax ecx edx ebx esi edi
+mboot.print: ; : : eax ecx edx ebx ebp esi edi
   mov ebp, [mboot.@info]
-  mov esi, mboot.?info
+  string `mboot.?info\t\t`
   call vga.print
   mov eax, ebp
   call fmt.hex
   call vga.print
 
-  mov esi, mboot.?flags
+  string `\nflags\t\t\t`
   call vga.print
   mov eax, [ebp + Info.flags]
   push eax
@@ -104,18 +78,18 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   .mem:
   test dword [esp], Flags.MEM
   jz .boot
-  _print mboot.?mem_lower, Info.mem_lower
-  _print mboot.?mem_upper, Info.mem_upper
+  _print `\nmem_lower\t\t`, Info.mem_lower
+  _print `\nmem_upper\t\t`, Info.mem_upper
 
   .boot:
   test dword [esp], Flags.BOOT_DEVICE
   jz .cmdline
-  _print mboot.?boot_device, Info.boot_device
+  _print `\nboot_device\t\t`, Info.boot_device
 
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  mov esi, mboot.?cmdline
+  string `\ncmdline\t\t\t`
   call vga.print
   mov esi, [ebp + Info.cmdline]
   call vga.print
@@ -123,38 +97,38 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   .mods:
   test dword [esp], Flags.MODS
   jz .shdr
-  _print mboot.?mods_count, Info.mods_count
-  _print mboot.?mods_addr, Info.mods_addr
+  _print `\nmods_count\t\t`, Info.mods_count
+  _print `\nmods_addr\t\t`, Info.mods_addr
 
   .shdr:
   test dword [esp], Flags.SHDR
   jz .mmap
-  _print mboot.?shdr_num, Info.shdr_num
-  _print mboot.?shdr_size, Info.shdr_size
-  _print mboot.?shdr_addr, Info.shdr_addr
-  _print mboot.?shdr_shndx, Info.shdr_shndx
+  _print `\nshdr_num\t\t`, Info.shdr_num
+  _print `\nshdr_size\t\t`, Info.shdr_size
+  _print `\nshdr_addr\t\t`, Info.shdr_addr
+  _print `\nshdr_shndx\t\t`, Info.shdr_shndx
 
   .mmap:
   test dword [esp], Flags.MMAP
   jz .drives
-  _print mboot.?mmap_length, Info.mmap_length
-  _print mboot.?mmap_addr, Info.mmap_addr
+  _print `\nmmap_length\t\t`, Info.mmap_length
+  _print `\nmmap_addr\t\t`, Info.mmap_addr
 
   .drives:
   test dword [esp], Flags.DRIVES
   jz .config
-  _print mboot.?drives_length, Info.drives_length
-  _print mboot.?drives_addr, Info.drives_addr
+  _print `\ndrives_length\t\t`, Info.drives_length
+  _print `\ndrives_addr\t\t`, Info.drives_addr
 
   .config:
   test dword [esp], Flags.CONFIG_TABLE
   jz .bootloader
-  _print mboot.?config_table, Info.config_table
+  _print `\nconfig_table\t\t`, Info.config_table
 
   .bootloader:
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apm
-  mov esi, mboot.?boot_loader_name
+  string `\nboot_loader_name\t`
   call vga.print
   mov esi, [ebp + Info.boot_loader_name]
   call vga.print
@@ -162,17 +136,17 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   .apm:
   test dword [esp], Flags.APM_TABLE
   jz .vbe
-  _print mboot.?apm_table, Info.apm_table
+  _print `\napm_table\t\t`, Info.apm_table
 
   .vbe:
   test dword [esp], Flags.VBE
   jz .ret
-  _print mboot.?vbe_control_info, Info.vbe_control_info
-  _print mboot.?vbe_mode_info, Info.vbe_mode_info
-  _print mboot.?vbe_mode, Info.vbe_mode
-  _print mboot.?vbe_interface_seg, Info.vbe_interface_seg
-  _print mboot.?vbe_interface_off, Info.vbe_interface_off
-  _print mboot.?vbe_interface_len, Info.vbe_interface_len
+  _print `\nvbe_control_info\t`, Info.vbe_control_info
+  _print `\nvbe_mode_info\t`, Info.vbe_mode_info
+  _print `\nvbe_mode\t\t`, Info.vbe_mode
+  _print `\nvbe_interface_seg\t`, Info.vbe_interface_seg
+  _print `\nvbe_interface_off\t`, Info.vbe_interface_off
+  _print `\nvbe_interface_len\t`, Info.vbe_interface_len
 
   .ret:
   add esp, 4
