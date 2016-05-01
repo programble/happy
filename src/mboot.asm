@@ -2,6 +2,18 @@ global mboot.boot, mboot.print
 extern fmt.bin, fmt.hex, vga.print
 %include "vga.mac"
 
+Flags.MEM equ 1
+Flags.BOOT_DEVICE equ 2
+Flags.CMDLINE equ 4
+Flags.MODS equ 8
+Flags.SHDR equ 0x20
+Flags.MMAP equ 0x40
+Flags.DRIVES equ 0x80
+Flags.CONFIG_TABLE equ 0x100
+Flags.BOOT_LOADER_NAME equ 0x200
+Flags.APM_TABLE equ 0x400
+Flags.VBE equ 0x800
+
 struc Info
   .flags: resd 1
   .mem_lower: resd 1
@@ -90,18 +102,18 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   call vga.print
 
   .mem:
-  test dword [esp], 1
+  test dword [esp], Flags.MEM
   jz .boot
   _print mboot.?mem_lower, Info.mem_lower
   _print mboot.?mem_upper, Info.mem_upper
 
   .boot:
-  test dword [esp], 2
+  test dword [esp], Flags.BOOT_DEVICE
   jz .cmdline
   _print mboot.?boot_device, Info.boot_device
 
   .cmdline:
-  test dword [esp], 4
+  test dword [esp], Flags.CMDLINE
   jz .mods
   mov esi, mboot.?cmdline
   call vga.print
@@ -109,13 +121,13 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   call vga.print
 
   .mods:
-  test dword [esp], 8
+  test dword [esp], Flags.MODS
   jz .shdr
   _print mboot.?mods_count, Info.mods_count
   _print mboot.?mods_addr, Info.mods_addr
 
   .shdr:
-  test dword [esp], 0x20
+  test dword [esp], Flags.SHDR
   jz .mmap
   _print mboot.?shdr_num, Info.shdr_num
   _print mboot.?shdr_size, Info.shdr_size
@@ -123,24 +135,24 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   _print mboot.?shdr_shndx, Info.shdr_shndx
 
   .mmap:
-  test dword [esp], 0x40
+  test dword [esp], Flags.MMAP
   jz .drives
   _print mboot.?mmap_length, Info.mmap_length
   _print mboot.?mmap_addr, Info.mmap_addr
 
   .drives:
-  test dword [esp], 0x80
+  test dword [esp], Flags.DRIVES
   jz .config
   _print mboot.?drives_length, Info.drives_length
   _print mboot.?drives_addr, Info.drives_addr
 
   .config:
-  test dword [esp], 0x100
+  test dword [esp], Flags.CONFIG_TABLE
   jz .bootloader
   _print mboot.?config_table, Info.config_table
 
   .bootloader:
-  test dword [esp], 0x200
+  test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apm
   mov esi, mboot.?boot_loader_name
   call vga.print
@@ -148,12 +160,12 @@ mboot.print: ; : : eax ecx edx ebx esi edi
   call vga.print
 
   .apm:
-  test dword [esp], 0x400
+  test dword [esp], Flags.APM_TABLE
   jz .vbe
   _print mboot.?apm_table, Info.apm_table
 
   .vbe:
-  test dword [esp], 0x800
+  test dword [esp], Flags.VBE
   jz .ret
   _print mboot.?vbe_control_info, Info.vbe_control_info
   _print mboot.?vbe_mode_info, Info.vbe_mode_info
