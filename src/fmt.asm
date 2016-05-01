@@ -1,4 +1,4 @@
-global fmt.bin, fmt.hex
+global fmt.bin, fmt.dec, fmt.hex
 
 section .rodata
 fmt.dig: db '0123456789ABCDEF'
@@ -21,6 +21,23 @@ fmt.bin: ; eax : esi : al ecx edi
   loop .for
   cld
   mov esi, edi
+  ret
+
+fmt.dec: ; eax : esi : eax edx ebx
+  mov ebx, 0xA
+  mov esi, fmt.$out
+  std
+  .for:
+    xor edx, edx
+    div ebx
+    test dl, dl
+    jz .break
+    add dl, '0'
+    dec esi
+    mov [esi], dl
+  jmp .for
+  .break:
+  cld
   ret
 
 fmt.hex: ; eax : esi : eax ecx edx ebx
