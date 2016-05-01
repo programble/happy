@@ -1,5 +1,6 @@
 global main
 extern vga.attr, vga.blank, vga.cursor, vga.print
+%include "macro.mac"
 %include "vga.mac"
 
 section .text
