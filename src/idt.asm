@@ -1,4 +1,4 @@
-global idt.init
+global idt.init, idt.int, idt.trap
 
 Gate.INTERRUPT equ 0b0000_0110
 Gate.TRAP equ 0b0000_0111
@@ -44,4 +44,22 @@ idt.idt:
 section .text
 idt.init: ; : :
   lidt [idt.idt]
+  ret
+
+idt._gate:
+  lea eax, [idt.~gates + eax * Gate_size]
+  mov [eax + Gate.offset_lo], dx
+  shr edx, 0x10
+  mov [eax + Gate.offset_hi], dx
+  mov [eax + Gate.segment], cs
+  ret
+
+idt.int: ; eax(vec) edx(handler) : : eax edx
+  call idt._gate
+  mov byte [eax + Gate.flags], Gate.INTERRUPT | Flags.D | Flags.DPL0 | Flags.P
+  ret
+
+idt.trap: ; eax(vec) edx(handler) : : eax edx
+  call idt._gate
+  mov byte [eax + Gate.flags], Gate.TRAP | Flags.D | Flags.DPL0 | Flags.P
   ret
