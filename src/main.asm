@@ -1,12 +1,11 @@
 global main
 extern vga.attr, vga.blank, vga.cursor, vga.print
-extern mboot.print, elf.sym, fmt.dec
 %include "macro.mac"
 %include "vga.mac"
 
 section .text
 main:
-  mov word [vga.attr], vga.GRY << vga.FG | vga.BLU << vga.BG
+  mov word [vga.attr], vga.GRY << vga.FG
   call vga.blank
   xor al, al
   call vga.cursor
