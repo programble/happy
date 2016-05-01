@@ -16,6 +16,7 @@ endstruc
 section .rodata
 panic.?panic: db `\n== PANIC ==\n`, 0
 panic.?file: db ':', 0
+panic.?eflags: db `\neflags `, 0
 panic.?eax: db `\neax `, 0
 panic.?ecx: db ' ecx ', 0
 panic.?edx: db ' edx ', 0
@@ -24,7 +25,6 @@ panic.?esp: db `\nesp `, 0
 panic.?ebp: db ' ebp ', 0
 panic.?esi: db ' esi ', 0
 panic.?edi: db ' edi ', 0
-panic.?eflags: db `\neflags `, 0
 panic.?space: db ' ', 0
 panic.?newline: db `\n`, 0
 
@@ -58,6 +58,13 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   call fmt.dec
   call vga.print
 
+  mov esi, panic.?eflags
+  call vga.print
+  mov eax, [esp]
+  call fmt.bin
+  call vga.print
+  add esp, 4
+
   _reg eax
   _reg ecx
   _reg edx
@@ -67,13 +74,6 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   _reg esi
   _reg edi
   add esp, 0x20
-
-  mov esi, panic.?eflags
-  call vga.print
-  mov eax, [esp]
-  call fmt.bin
-  call vga.print
-  add esp, 4
 
   mov esi, panic.?newline
   call vga.print

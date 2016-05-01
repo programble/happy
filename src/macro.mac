@@ -21,8 +21,8 @@ extern _panic
   __SECT__
   %%eip:
   cli
-  pushfd
   pushad
+  pushfd
   mov eax, %%eip
   mov ecx, __LINE__
   mov edx, %%file
