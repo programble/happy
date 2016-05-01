@@ -24,6 +24,8 @@ fmt.bin: ; eax : esi : al ecx edi
   ret
 
 fmt.dec: ; eax : esi : eax edx ebx
+  test eax, eax
+  jz .zero
   mov ebx, 0xA
   mov esi, fmt.$out
   std
@@ -38,6 +40,10 @@ fmt.dec: ; eax : esi : eax edx ebx
   jmp .for
   .break:
   cld
+  ret
+  .zero:
+  mov esi, fmt.$out - 1
+  mov byte [esi], '0'
   ret
 
 fmt.hex: ; eax : esi : eax ecx edx ebx
