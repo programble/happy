@@ -10,10 +10,10 @@ struc Info
   .cmdline: resd 1
   .mods_count: resd 1
   .mods_addr: resd 1
-  .syms_num: resd 1
-  .syms_size: resd 1
-  .syms_addr: resd 1
-  .syms_shndx: resd 1
+  .shdr_num: resd 1
+  .shdr_size: resd 1
+  .shdr_addr: resd 1
+  .shdr_shndx: resd 1
   .mmap_length: resd 1
   .mmap_addr: resd 1
   .drives_length: resd 1
@@ -41,10 +41,10 @@ mboot.?boot_device: db `\nboot_device\t\t`, 0
 mboot.?cmdline: db `\ncmdline\t\t\t`, 0
 mboot.?mods_count: db `\nmods_count\t\t`, 0
 mboot.?mods_addr: db `\nmods_addr\t\t`, 0
-mboot.?syms_num: db `\nsyms_num\t\t`, 0
-mboot.?syms_size: db `\nsyms_size\t\t`, 0
-mboot.?syms_addr: db `\nsyms_addr\t\t`, 0
-mboot.?syms_shndx: db `\nsyms_shndx\t\t`, 0
+mboot.?shdr_num: db `\nshdr_num\t\t`, 0
+mboot.?shdr_size: db `\nshdr_size\t\t`, 0
+mboot.?shdr_addr: db `\nshdr_addr\t\t`, 0
+mboot.?shdr_shndx: db `\nshdr_shndx\t\t`, 0
 mboot.?mmap_length: db `\nmmap_length\t\t`, 0
 mboot.?mmap_addr: db `\nmmap_addr\t\t`, 0
 mboot.?drives_length: db `\ndrives_length\t\t`, 0
@@ -110,17 +110,17 @@ mboot.print: ; : : eax ecx edx ebx esi edi
 
   .mods:
   test dword [esp], 8
-  jz .syms
+  jz .shdr
   _print mboot.?mods_count, Info.mods_count
   _print mboot.?mods_addr, Info.mods_addr
 
-  .syms:
+  .shdr:
   test dword [esp], 0x20
   jz .mmap
-  _print mboot.?syms_num, Info.syms_num
-  _print mboot.?syms_size, Info.syms_size
-  _print mboot.?syms_addr, Info.syms_addr
-  _print mboot.?syms_shndx, Info.syms_shndx
+  _print mboot.?shdr_num, Info.shdr_num
+  _print mboot.?shdr_size, Info.shdr_size
+  _print mboot.?shdr_addr, Info.shdr_addr
+  _print mboot.?shdr_shndx, Info.shdr_shndx
 
   .mmap:
   test dword [esp], 0x40
