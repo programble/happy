@@ -1,5 +1,5 @@
 global boot, halt
-extern mboot.boot, gdt.init, main
+extern mboot.boot, gdt.init, idt.init, main
 
 MAGIC equ 0x1BADB002
 FLAGS equ 0x0
@@ -19,6 +19,7 @@ boot:
   mov esp, boot.$stack
   call mboot.boot
   call gdt.init
+  call idt.init
   push halt
   jmp main
 
