@@ -43,8 +43,6 @@ _panic: ; eax(eip) ecx(line) edx(file) esi(msg) : :
   pop eax
   call fmt.hex
   call vga.print
-  string ':'
-  call vga.print
   pop esi
   call vga.print
   pop eax

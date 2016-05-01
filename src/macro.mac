@@ -23,7 +23,7 @@ extern _panic
 %macro panic 1
   [section .rodata]
   %%msg: db %1, `\n`, 0
-  %%file: db __FILE__, ':', 0
+  %%file: db ' ', __FILE__, ':', 0
 
   __SECT__
   %%panic:
