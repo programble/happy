@@ -26,11 +26,11 @@ extern _panic
   %%file: db __FILE__, ':', 0
 
   __SECT__
-  %%eip:
+  %%panic:
   cli
   pushad
   pushfd
-  mov eax, %%eip
+  mov eax, %%panic
   mov ecx, __LINE__
   mov edx, %%file
   mov esi, %%msg
@@ -38,7 +38,7 @@ extern _panic
 %endmacro
 
 %macro panicc 2
-  j%-1 %%skip
+  j%-1 %%else
   panic %2
-  %%skip:
+  %%else:
 %endmacro
