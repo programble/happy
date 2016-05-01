@@ -1,5 +1,5 @@
 global mboot.boot, mboot.print
-extern fmt.bin, fmt.hex, vga.print
+extern elf.init, fmt.bin, fmt.hex, vga.print
 %include "macro.mac"
 %include "vga.mac"
 
@@ -50,6 +50,11 @@ mboot.boot:
   cmp eax, 0x2BADB002
   jne .ret
   mov [mboot.@info], ebx
+  test dword [ebx + Info.flags], Flags.SHDR
+  jz .ret
+  mov ecx, [ebx + Info.shdr_num]
+  mov ebx, [ebx + Info.shdr_addr]
+  call elf.init
   .ret: ret
 
 %macro _print 2

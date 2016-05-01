@@ -1,6 +1,6 @@
 global main
-extern vga.attr, vga.blank, vga.cursor
-extern mboot.print
+extern vga.attr, vga.blank, vga.cursor, vga.print
+extern mboot.print, elf.sym, fmt.dec
 %include "macro.mac"
 %include "vga.mac"
 
@@ -10,5 +10,15 @@ main:
   call vga.blank
   xor al, al
   call vga.cursor
-  call mboot.print
+  string `Hello, world!\n`
+  call vga.print
+  mov eax, $
+  call elf.sym
+  push ecx
+  call vga.print
+  string '+'
+  call vga.print
+  pop eax
+  call fmt.dec
+  call vga.print
   ret
