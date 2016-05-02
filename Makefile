@@ -3,6 +3,7 @@ NASM = nasm
 GENISOIMAGE = genisoimage
 QEMU = qemu-system-i386
 GDB = gdb
+CONVERT = convert
 
 LD_FLAGS = -m elf_i386 -nostdlib
 NASM_FLAGS = -f elf32 -i src/ -g
@@ -14,6 +15,7 @@ GDB_FLAGS = \
   -ex 'set disassembly-flavor intel' \
   -ex 'display/i $$pc' \
   -ex 'target remote localhost:1234'
+CONVERT_FLAGS = -delay 10 -loop 0
 
 KERNEL = out/happy.elf
 LD_SCRIPT = friendship.ld
@@ -23,6 +25,7 @@ DEPS = $(SOURCES:src/%.asm=out/dep/%.mk)
 ISO = out/happy.iso
 STAGE2 = stage2_eltorito
 MENU_LST = menu.lst
+GIF = out/screenshot.gif
 
 kernel: $(KERNEL)
 
@@ -65,6 +68,11 @@ qemu-iso: $(ISO)
 gdb: $(KERNEL)
 	$(GDB) $(GDB_FLAGS) $<
 
-.PHONY: kernel iso clean qemu gdb
+gif: $(GIF)
+
+$(GIF): $(wildcard screenshot/*.png)
+	$(CONVERT) $(CONVERT_FLAGS) $^ $@
+
+.PHONY: kernel iso clean qemu gdb gif
 
 -include config.mk
