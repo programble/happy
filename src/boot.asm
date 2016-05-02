@@ -1,5 +1,5 @@
 global boot.~stack, boot.$stack, boot
-extern mboot.boot, gdt.init, idt.init, abort.init, main
+extern mboot.boot, gdt.init, idt.init, abort.init, fault.init, main
 %include "macro.mac"
 %include "vga.mac"
 
@@ -28,6 +28,7 @@ boot:
   call gdt.init
   call idt.init
   call abort.init
+  call fault.init
   sti
   call main
   panic 'return from main'

@@ -3,7 +3,7 @@ extern idt.int
 %include "macro.mac"
 
 section .text
-abort.init:
+abort.init: ; : : eax edx
   mov eax, 8
   mov edx, abort.df
   call idt.int
