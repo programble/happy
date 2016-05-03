@@ -1,5 +1,5 @@
 global diag.printEflags, diag.printRegs, diag.printStack
-extern fmt.hex, vga.print, boot.$stack, elf.sym
+extern core.boundLower, core.boundUpper, fmt.hex, vga.print, boot.$stack, elf.sym
 %include "macro.mac"
 
 Eflags:
@@ -101,8 +101,10 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
     call vga.print
 
     mov eax, [ebp]
-    cmp eax, 0x00100000 ; TODO: extern
+    cmp eax, core.boundLower
     jb .next
+    cmp eax, core.boundUpper
+    ja .next
     call elf.sym
     test esi, esi
     jz .next
