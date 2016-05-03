@@ -1,6 +1,6 @@
 global main.main
 extern vga.attr, vga.blank, vga.cursor, vga.print
-extern fmt.bin
+extern mboot.printInfo
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -13,8 +13,6 @@ main.main:
   call vga.cursor
   string `Hello, world!\n`
   call vga.print
-  mov eax, 0DEADBEEFh
-  call fmt.bin
-  call vga.print
+  call mboot.printInfo
   panic 'ayyyyy lmao'
   ret

@@ -1,100 +1,100 @@
-global mboot.boot, mboot.print
+global mboot.init, mboot.printInfo
 extern elf.init, fmt.bin, fmt.hex, vga.print
 %include "macro.mac"
-%include "vga.mac"
+%include "core.mac"
 
-Flags.MEM equ 1
-Flags.BOOT_DEVICE equ 2
-Flags.CMDLINE equ 4
-Flags.MODS equ 8
-Flags.SHDR equ 0x20
-Flags.MMAP equ 0x40
-Flags.DRIVES equ 0x80
-Flags.CONFIG_TABLE equ 0x100
-Flags.BOOT_LOADER_NAME equ 0x200
-Flags.APM_TABLE equ 0x400
-Flags.VBE equ 0x800
+Flags:
+  .MEM: equ 1
+  .BOOT_DEVICE: equ 2
+  .CMDLINE: equ 4
+  .MODS: equ 8
+  .SYMS: equ 10h
+  .SHDR: equ 20h
+  .MMAP: equ 40h
+  .DRIVES: equ 80h
+  .CONFIG_TABLE: equ 100h
+  .BOOT_LOADER_NAME: equ 200h
+  .APM_TABLE: equ 400h
+  .VBE: equ 800h
 
 struc Info
   .flags: resd 1
-  .mem_lower: resd 1
-  .mem_upper: resd 1
-  .boot_device: resd 1
+  .memLower: resd 1
+  .memUpper: resd 1
+  .bootDevice: resd 1
   .cmdline: resd 1
-  .mods_count: resd 1
-  .mods_addr: resd 1
-  .shdr_num: resd 1
-  .shdr_size: resd 1
-  .shdr_addr: resd 1
-  .shdr_shndx: resd 1
-  .mmap_length: resd 1
-  .mmap_addr: resd 1
-  .drives_length: resd 1
-  .drives_addr: resd 1
-  .config_table: resd 1
-  .boot_loader_name: resd 1
-  .apm_table: resd 1
-  .vbe_control_info: resd 1
-  .vbe_mode_info: resd 1
-  .vbe_mode: resd 1
-  .vbe_interface_seg: resd 1
-  .vbe_interface_off: resd 1
-  .vbe_interface_len: resd 1
+  .modsCount: resd 1
+  .modsAddr: resd 1
+  .shdrNum: resd 1
+  .shdrSize: resd 1
+  .shdrAddr: resd 1
+  .shdrShndx: resd 1
+  .mmapLength: resd 1
+  .mmapAddr: resd 1
+  .drivesLength: resd 1
+  .drivesAddr: resd 1
+  .configTable: resd 1
+  .bootLoaderName: resd 1
+  .apmTable: resd 1
+  .vbeControlInfo: resd 1
+  .vbeModeInfo: resd 1
+  .vbeMode: resd 1
+  .vbeInterfaceSeg: resd 1
+  .vbeInterfaceOff: resd 1
+  .vbeInterfaceLen: resd 1
 endstruc
 
 section .data
-mboot.@info: dd 0
+mboot.info: dd 0
 
 section .text
-mboot.boot:
-  cmp eax, 0x2BADB002
-  jne .ret
-  mov [mboot.@info], ebx
+mboot.init: ; eax(magic) ebx(info) : : eax ecx ebx
+  cmp eax, 2BADB002h
+  panicc ne, 'invalid multiboot magic'
+  mov [mboot.info], ebx
+
   test dword [ebx + Info.flags], Flags.SHDR
   jz .ret
-  mov ecx, [ebx + Info.shdr_num]
-  mov ebx, [ebx + Info.shdr_addr]
+  mov ecx, [ebx + Info.shdrNum]
+  mov ebx, [ebx + Info.shdrAddr]
   call elf.init
-  .ret: ret
 
-%macro _print 2
-  string %1
-  call vga.print
-  mov eax, [ebp + %2]
-  call fmt.hex
-  call vga.print
-%endmacro
+  .ret:
+  ret
 
-mboot.print: ; : : eax ecx edx ebx ebp esi edi
-  mov ebp, [mboot.@info]
-  string `mboot.?info\t\t`
-  call vga.print
-  mov eax, ebp
-  call fmt.hex
-  call vga.print
+mboot.printInfo: ; : : eax ecx edx ebp esi edi
+  mov ebp, [mboot.info]
 
-  string `\nflags\t\t\t`
+  string `flags\t\t`
   call vga.print
   mov eax, [ebp + Info.flags]
   push eax
   call fmt.bin
   call vga.print
 
+  %macro _field 2
+    string %1
+    call vga.print
+    mov eax, [ebp + Info.%2]
+    call fmt.hex
+    call vga.print
+  %endmacro
+
   .mem:
   test dword [esp], Flags.MEM
-  jz .boot
-  _print `\nmem_lower\t\t`, Info.mem_lower
-  _print `\nmem_upper\t\t`, Info.mem_upper
+  jz .bootDevice
+  _field `\nmemLower\t`, memLower
+  _field `\nmemUpper\t`, memUpper
 
-  .boot:
+  .bootDevice:
   test dword [esp], Flags.BOOT_DEVICE
   jz .cmdline
-  _print `\nboot_device\t\t`, Info.boot_device
+  _field `\nbootDevice\t`, bootDevice
 
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  string `\ncmdline\t\t\t`
+  string `\ncmdline\t\t`
   call vga.print
   mov esi, [ebp + Info.cmdline]
   call vga.print
@@ -102,56 +102,56 @@ mboot.print: ; : : eax ecx edx ebx ebp esi edi
   .mods:
   test dword [esp], Flags.MODS
   jz .shdr
-  _print `\nmods_count\t\t`, Info.mods_count
-  _print `\nmods_addr\t\t`, Info.mods_addr
+  _field `\nmodsCount\t`, modsCount
+  _field `\nmodsAddr\t`, modsAddr
 
   .shdr:
   test dword [esp], Flags.SHDR
   jz .mmap
-  _print `\nshdr_num\t\t`, Info.shdr_num
-  _print `\nshdr_size\t\t`, Info.shdr_size
-  _print `\nshdr_addr\t\t`, Info.shdr_addr
-  _print `\nshdr_shndx\t\t`, Info.shdr_shndx
+  _field `\nshdrNum\t\t`, shdrNum
+  _field `\nshdrSize\t`, shdrSize
+  _field `\nshdrAddr\t`, shdrAddr
+  _field `\nshdrShndx\t`, shdrShndx
 
   .mmap:
   test dword [esp], Flags.MMAP
   jz .drives
-  _print `\nmmap_length\t\t`, Info.mmap_length
-  _print `\nmmap_addr\t\t`, Info.mmap_addr
+  _field `\nmmapLength\t`, mmapLength
+  _field `\nmmapAddr\t`, mmapAddr
 
   .drives:
   test dword [esp], Flags.DRIVES
-  jz .config
-  _print `\ndrives_length\t\t`, Info.drives_length
-  _print `\ndrives_addr\t\t`, Info.drives_addr
+  jz .configTable
+  _field `\ndrivesLength\t`, drivesLength
+  _field `\ndrivesAddr\t`, drivesAddr
 
-  .config:
+  .configTable:
   test dword [esp], Flags.CONFIG_TABLE
-  jz .bootloader
-  _print `\nconfig_table\t\t`, Info.config_table
+  jz .bootLoaderName
+  _field `\nconfigTable\t`, configTable
 
-  .bootloader:
+  .bootLoaderName:
   test dword [esp], Flags.BOOT_LOADER_NAME
-  jz .apm
-  string `\nboot_loader_name\t`
+  jz .apmTable
+  string `\nbootLoaderName\t`
   call vga.print
-  mov esi, [ebp + Info.boot_loader_name]
+  mov esi, [ebp + Info.bootLoaderName]
   call vga.print
 
-  .apm:
+  .apmTable:
   test dword [esp], Flags.APM_TABLE
   jz .vbe
-  _print `\napm_table\t\t`, Info.apm_table
+  _field `\napmTable\t`, apmTable
 
   .vbe:
   test dword [esp], Flags.VBE
   jz .ret
-  _print `\nvbe_control_info\t`, Info.vbe_control_info
-  _print `\nvbe_mode_info\t`, Info.vbe_mode_info
-  _print `\nvbe_mode\t\t`, Info.vbe_mode
-  _print `\nvbe_interface_seg\t`, Info.vbe_interface_seg
-  _print `\nvbe_interface_off\t`, Info.vbe_interface_off
-  _print `\nvbe_interface_len\t`, Info.vbe_interface_len
+  _field `\nvbeControlInfo\t`, vbeControlInfo
+  _field `\nvbeModeInfo\t`, vbeModeInfo
+  _field `\nvbeMode\t\t`, vbeMode
+  _field `\nvbeInterfaceSeg\t`, vbeInterfaceSeg
+  _field `\nvbeInterfaceOff\t`, vbeInterfaceOff
+  _field `\nvbeInterfaceLen\t`, vbeInterfaceLen
 
   .ret:
   add esp, 4
