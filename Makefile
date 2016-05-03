@@ -3,6 +3,7 @@ NASM = nasm
 GENISOIMAGE = genisoimage
 QEMU = qemu-system-i386
 GDB = gdb
+GREP = grep
 CONVERT = convert
 
 LD_FLAGS = -m elf_i386 -nostdlib
@@ -68,11 +69,14 @@ qemu-iso: $(ISO)
 gdb: $(KERNEL)
 	$(GDB) $(GDB_FLAGS) $<
 
+annotations:
+	$(GREP) -h ': ;' $(SOURCES)
+
 gif: $(GIF)
 
 $(GIF): $(wildcard screenshot/*.png)
 	$(CONVERT) $(CONVERT_FLAGS) $^ $@
 
-.PHONY: kernel iso clean qemu gdb gif
+.PHONY: kernel iso clean qemu gdb annotations gif
 
 -include config.mk
