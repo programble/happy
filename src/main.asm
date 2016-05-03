@@ -11,5 +11,4 @@ main:
   call vga.cursor
   string `Hello, world!\n`
   call vga.print
-  int 3
   ret
