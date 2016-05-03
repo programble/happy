@@ -18,27 +18,3 @@
   __SECT__
   mov esi, %%str
 %endmacro
-
-extern _panic
-%macro panic 1
-  [section .rodata]
-  %%msg: db %1, `\n`, 0
-  %%file: db ' ', __FILE__, ':', 0
-
-  __SECT__
-  %%panic:
-  cli
-  pushad
-  pushfd
-  mov eax, %%panic
-  mov ecx, __LINE__
-  mov edx, %%file
-  mov esi, %%msg
-  jmp _panic
-%endmacro
-
-%macro panicc 2
-  j%-1 %%else
-  panic %2
-  %%else:
-%endmacro

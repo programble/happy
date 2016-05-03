@@ -1,6 +1,7 @@
 global fault.init
 extern idt.int
 %include "macro.mac"
+%include "core.mac"
 
 %macro _fault 2
   mov eax, %1

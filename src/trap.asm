@@ -1,6 +1,7 @@
 global trap.init
 extern idt.int
 %include "macro.mac"
+%include "core.mac"
 
 section .text
 trap.init: ; : : eax edx

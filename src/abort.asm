@@ -1,6 +1,7 @@
 global abort.init
 extern idt.int
 %include "macro.mac"
+%include "core.mac"
 
 section .text
 abort.init: ; : : eax edx
