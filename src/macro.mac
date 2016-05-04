@@ -14,7 +14,7 @@
 
 %macro string 1
   [section .rodata]
-  %%str: db %1, 0
+  %%string: db %1, 0
   __SECT__
-  mov esi, %%str
+  mov esi, %%string
 %endmacro

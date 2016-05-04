@@ -41,10 +41,10 @@ diag.printEflags: ; [esp+4](pushfd) : : eax ecx edx ebx esi edi
 
   %macro _flag 2
     test dword [esp + 4], Eflags.%1
-    jz %%else
+    jz %%flagElse
     string %2
     call vga.print
-    %%else:
+    %%flagElse:
   %endmacro
 
   _flag CF, ' CF'

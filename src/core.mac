@@ -18,7 +18,7 @@ extern core.panic
 %endmacro
 
 %macro panicc 2
-  j%-1 %%else
+  j%-1 %%panicElse
   panic %2
-  %%else:
+  %%panicElse:
 %endmacro
