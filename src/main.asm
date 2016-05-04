@@ -1,5 +1,5 @@
 global main.main
-extern vga.attr, vga.blank, vga.cursor, vga.print
+extern vga.attribute, vga.blank, vga.cursorShape, vga.print
 extern mboot.printInfo
 %include "macro.mac"
 %include "core.mac"
@@ -7,10 +7,10 @@ extern mboot.printInfo
 
 section .text
 main.main:
-  mov word [vga.attr], vga.GRY << vga.FG
+  mov word [vga.attribute], vga.Color.GRAY << vga.Color.FG
   call vga.blank
   xor al, al
-  call vga.cursor
+  call vga.cursorShape
   string `Hello, world!\n`
   call vga.print
   call mboot.printInfo

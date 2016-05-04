@@ -1,17 +1,16 @@
-%define vga.BUF 0xB8000
+%define vga.BUFFER 000B8000h
+%define vga.WIDTH 160
+%define vga.HEIGHT 25
 
-%define vga.COLS 160
-%define vga.ROWS 25
+%define vga.Color.FG 8
+%define vga.Color.BG 0Ch
 
-%define vga.FG 8
-%define vga.BG 12
-
-%define vga.BLK 0
-%define vga.BLU 1
-%define vga.GRN 2
-%define vga.CYN 3
-%define vga.RED 4
-%define vga.MAG 5
-%define vga.YEL 6
-%define vga.GRY 7
-%define vga.BRI 8
+%define vga.Color.BLACK 0
+%define vga.Color.BLUE 1
+%define vga.Color.GREEN 2
+%define vga.Color.CYAN 3
+%define vga.Color.RED 4
+%define vga.Color.MAGENTA 5
+%define vga.Color.YELLOW 6
+%define vga.Color.GRAY 7
+%define vga.Color.BRIGHT 8

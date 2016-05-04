@@ -1,123 +1,132 @@
-global vga.~buf, vga.$buf, vga.#buf, vga.@buf, vga.attr
-global vga.blank, vga.cursor, vga.print
+global vga.blank, vga.print, vga.cursorShape
+global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
 %include "macro.mac"
 %include "vga.mac"
 
-absolute vga.BUF
-vga.~buf: resb vga.COLS * vga.ROWS
-vga.$buf:
-vga.#buf equ $ - vga.~buf
+absolute vga.BUFFER
+vga.buffer: resb vga.WIDTH * vga.HEIGHT
+.$:
 
 section .data
-vga.@buf: dd vga.~buf
-vga.attr: dw 0
+vga.pointer: dd vga.buffer
+vga.attribute: dw vga.Color.GRAY << vga.Color.FG
 
 section .text
-vga._cursor: ; edi : : ax dx edi
-  sub edi, vga.~buf
-  shr di, 1
-  mov dx, 0x3D4
-  mov al, 0xE
-  out dx, al
-  inc dx
-  mov ax, di
-  shr ax, 8
-  out dx, al
-  dec dx
-  mov al, 0xF
-  out dx, al
-  inc dx
-  mov ax, di
-  out dx, al
+vga.blank: ; : : eax ecx edx edi
+  mov ax, [vga.attribute]
+  shl eax, 10h
+  mov ax, [vga.attribute]
+
+  mov edi, vga.buffer
+  mov ecx, vga.WIDTH * vga.HEIGHT / 4
+  rep stosd
+
+  mov edi, vga.buffer
+  mov [vga.pointer], edi
+  jmp vga._cursorMove
+
+vga.print: ; esi(string) : : eax ecx edx esi edi
+  mov edi, [vga.pointer]
+  mov ax, [vga.attribute]
+
+  .while:
+    cmp edi, vga.buffer.$
+    jb .else
+    mpush eax, esi, edi
+    call vga._scroll
+    mpop eax, esi, edi
+    sub edi, vga.WIDTH
+
+    .else:
+    lodsb
+    test al, al
+    jz .break
+
+    .caseBS:
+    cmp al, `\b`
+    jne .caseHT
+    sub edi, 2
+    mov byte [edi], ' '
+    jmp .else
+
+    .caseHT:
+    cmp al, `\t`
+    jne .caseLF
+    add edi, 10h
+    and edi, -0Fh
+    jmp .while
+
+    .caseLF:
+    cmp al, `\n`
+    jne .caseCR
+    add edi, vga.WIDTH
+    jmp .CR
+
+    .caseCR:
+    cmp al, `\r`
+    jne .caseElse
+    .CR:
+    push eax
+    lea eax, [edi - vga.buffer]
+    xor edx, edx
+    mov ecx, vga.WIDTH
+    div ecx
+    mul ecx
+    lea edi, [eax + vga.buffer]
+    pop eax
+    jmp .while
+
+    .caseElse:
+    stosw
+  jmp .while
+
+  .break:
+  mov [vga.pointer], edi
+  jmp vga._cursorMove
+
+vga._scroll: ; : : eax ecx esi edi
+  mov edi, vga.buffer
+  mov esi, vga.buffer + vga.WIDTH
+  mov ecx, (vga.HEIGHT - 1) * vga.WIDTH / 4
+  rep movsd
+
+  mov ax, [vga.attribute]
+  shl eax, 10h
+  mov ax, [vga.attribute]
+  mov ecx, vga.WIDTH / 4
+  rep stosd
+
   ret
 
-vga.cursor: ; al : : ah dx
-  mov dx, 0x3D4
+vga.cursorShape: ; al : : ah dx
   mov ah, al
-  mov al, 0x0A
+  mov dx, 3D4h
+  mov al, 0Ah
   out dx, al
   inc dx
   mov al, ah
   out dx, al
   ret
 
-vga.blank: ; : : eax ecx edi
-  mov ax, [vga.attr]
-  shl eax, 0x10
-  mov ax, [vga.attr]
-  mov edi, vga.~buf
-  mov [vga.@buf], edi
-  mov ecx, vga.#buf / 4
-  rep stosd
-  mov edi, vga.~buf
-  jmp vga._cursor
+vga._cursorMove: ; edi(pointer) : :
+  sub edi, vga.buffer
+  shr di, 1
 
-vga.print: ; esi(str) : : ax ecx edx esi edi
-  mov edi, [vga.@buf]
-  mov ax, [vga.attr]
+  mov dx, 3D4h
+  mov al, 0Eh
+  out dx, al
 
-  .while:
-    cmp edi, vga.$buf
-    jb .lods
+  inc dx
+  mov ax, di
+  shr ax, 8
+  out dx, al
 
-    .scroll:
-    mpush eax, esi, edi
-    mov edi, vga.~buf
-    mov esi, vga.~buf + vga.COLS
-    mov ecx, (vga.ROWS - 1) * vga.COLS / 4
-    rep movsd
-    mov ax, [vga.attr]
-    shl eax, 0x10
-    mov ax, [vga.attr]
-    mov ecx, vga.COLS / 4
-    rep stosd
-    pop edi
-    sub edi, vga.COLS
-    mpop eax, esi
+  dec dx
+  mov al, 0Fh
+  out dx, al
 
-    .lods:
-    lodsb
-    test al, al
-    jz .break
+  inc dx
+  mov ax, di
+  out dx, al
 
-    .bs:
-    cmp al, `\b`
-    jne .ht
-    sub edi, 2
-    mov byte [edi], ' '
-    jmp .while
-
-    .ht:
-    cmp al, `\t`
-    jne .lf
-    add edi, 0x10
-    and edi, -0xF
-    jmp .while
-
-    .lf:
-    cmp al, `\n`
-    jne .cr
-    add edi, vga.COLS
-    jmp ._cr
-
-    .cr:
-    cmp al, `\r`
-    jne .stos
-    ._cr:
-    push eax
-    lea eax, [edi - vga.~buf]
-    xor edx, edx
-    mov edi, vga.COLS
-    div edi
-    mul edi
-    lea edi, [eax + vga.~buf]
-    pop eax
-    jmp .while
-
-    .stos:
-    stosw
-  jmp .while
-
-  .break:
-  mov [vga.@buf], edi
-  jmp vga._cursor
+  ret

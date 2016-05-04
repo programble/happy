@@ -1,7 +1,7 @@
 global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
 extern mboot.init, gdt.init, idt.init, abort.init, fault.init, trap.init, main.main
-extern fmt.dec, fmt.hex, vga.attr, vga.print
+extern fmt.dec, fmt.hex, vga.attribute, vga.print
 extern diag.printEflags, diag.printRegs, diag.printStack
 %include "macro.mac"
 %include "vga.mac"
@@ -50,7 +50,7 @@ core.panic: ; eax(eip) ecx(line) edx(file) esi(msg) [esp+4](pushfd) [esp+8](push
   push eax
   push esi
 
-  mov word [vga.attr], vga.RED << vga.FG
+  mov word [vga.attribute], vga.Color.RED << vga.Color.FG
   string `\n== PANIC ==\n`
   call vga.print
 
