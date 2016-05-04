@@ -1,7 +1,7 @@
 global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
 extern mboot.init, gdt.init, idt.init, abort.init, fault.init, trap.init, main.main
-extern fmt.dec, fmt.hex, vga.attribute, vga.print
+extern fmt.dec, fmt.hex, vga.attribute, vga.printChar, vga.print
 extern diag.printEflags, diag.printRegs, diag.printStack
 %include "macro.mac"
 %include "vga.mac"
@@ -72,13 +72,13 @@ core.panic: ; eax(eip) ecx(line) edx(file) esi(msg) [esp+4](pushfd) [esp+8](push
   call vga.print
   call diag.printEflags
   add esp, 4
-  string `\n`
-  call vga.print
+  mov al, `\n`
+  call vga.printChar
 
   call diag.printRegs
   add esp, 20h
-  string `\n`
-  call vga.print
+  mov al, `\n`
+  call vga.printChar
 
   call diag.printStack
 

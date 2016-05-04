@@ -1,4 +1,4 @@
-global vga.blank, vga.print, vga.cursorShape
+global vga.blank, vga.printChar, vga.print, vga.cursorShape
 global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
 %include "macro.mac"
 %include "vga.mac"
@@ -10,6 +10,7 @@ vga.buffer: resb vga.WIDTH * vga.HEIGHT
 section .data
 vga.pointer: dd vga.buffer
 vga.attribute: dw vga.Color.GRAY << vga.Color.FG
+vga.charString: db ' ', 0
 
 section .text
 vga.blank: ; : : eax ecx edx edi
@@ -24,6 +25,11 @@ vga.blank: ; : : eax ecx edx edi
   mov edi, vga.buffer
   mov [vga.pointer], edi
   jmp vga._cursorMove
+
+vga.printChar: ; al(char) : : eax ecx edx esi edi
+  mov esi, vga.charString
+  mov [esi], al
+  jmp vga.print
 
 vga.print: ; esi(string) : : eax ecx edx esi edi
   mov edi, [vga.pointer]

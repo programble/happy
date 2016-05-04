@@ -1,6 +1,6 @@
 global diag.printEflags, diag.printRegs, diag.printStack
 extern core.boundLower, core.boundUpper, core.stack.$
-extern fmt.hex, vga.print, elf.symbolString
+extern fmt.hex, vga.printChar, vga.print, elf.symbolString
 %include "macro.mac"
 
 Eflags:
@@ -92,14 +92,14 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
     mov eax, ebp
     call fmt.hex
     call vga.print
-    string ' '
-    call vga.print
+    mov al, ' '
+    call vga.printChar
 
     mov eax, [ebp]
     call fmt.hex
     call vga.print
-    string ' '
-    call vga.print
+    mov al, ' '
+    call vga.printChar
 
     mov eax, [ebp]
     cmp eax, core.boundLower
@@ -113,14 +113,14 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
     mov eax, ecx
     call fmt.hex
     call vga.print
-    string '+'
-    call vga.print
+    mov al, '+'
+    call vga.printChar
     pop esi
     call vga.print
 
     .next:
-    string `\n`
-    call vga.print
+    mov al, `\n`
+    call vga.printChar
     add ebp, 4
   cmp ebp, core.stack.$
   jb .while
