@@ -104,6 +104,7 @@ vga._scroll: ; : : eax ecx esi edi
 
   ret
 
+; TODO: Constants for ports.
 vga.cursorShape: ; al : : ah dx
   mov ah, al
   mov dx, 3D4h
@@ -114,6 +115,7 @@ vga.cursorShape: ; al : : ah dx
   out dx, al
   ret
 
+; TODO: Constants for ports.
 vga._cursorMove: ; edi(pointer) : :
   sub edi, vga.buffer
   shr di, 1
