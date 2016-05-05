@@ -1,4 +1,4 @@
-global vga.blank, vga.writeChar, vga.write, vga.cursorShape
+global vga.init, vga.blank, vga.writeChar, vga.write, vga.cursorShape
 global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
 %include "macro.mac"
 %include "vga.mac"
@@ -13,6 +13,7 @@ vga.attribute: dw vga.Color.GRAY << vga.Color.FG
 vga.charString: db ' ', 0
 
 section .text
+vga.init: ; : : eax ecx edx edi
 vga.blank: ; : : eax ecx edx edi
   mov ax, [vga.attribute]
   shl eax, 10h

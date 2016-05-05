@@ -7,12 +7,8 @@ extern vga.attribute, vga.blank, vga.cursorShape, mboot.printInfo
 
 section .text
 main.main:
-  mov word [vga.attribute], vga.Color.GRAY << vga.Color.FG
-  call vga.blank
   xor al, al
   call vga.cursorShape
-  string `Hello, world!\n`
-  text.write
+  text.write `Hello, world!\n`
   call mboot.printInfo
-  panic 'this was a triumph'
   ret
