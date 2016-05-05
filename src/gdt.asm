@@ -1,4 +1,5 @@
 global gdt.init
+global gdt.table, gdt.table.null, gdt.table.code, gdt.table.data, gdt.table.#
 
 Type:
   .DATA: equ 0000_0000b

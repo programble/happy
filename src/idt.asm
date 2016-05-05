@@ -1,22 +1,27 @@
-global idt.init, idt.int, idt.trap
+global idt.init
+extern gdt.table, gdt.table.code
 %include "macro.mac"
+%include "core.mac"
 
-Gate.INTERRUPT equ 0b0000_0110
-Gate.TRAP equ 0b0000_0111
+Gate:
+  .TASK: equ 0000_0101b
+  .INTERRUPT: equ 0000_0110b
+  .TRAP: equ 0000_0111b
 
-Flags.D equ 0b0000_1000
-Flags.DPL0 equ 0b0000_0000
-Flags.DPL1 equ 0b0010_0000
-Flags.DPL2 equ 0b0100_0000
-Flags.DPL3 equ 0b0110_0000
-Flags.P equ 0b1000_0000
+Flags:
+  .D: equ 0000_1000b
+  .DPL0: equ 0000_0000b
+  .DPL1: equ 0010_0000b
+  .DPL2: equ 0100_0000b
+  .DPL3: equ 0110_0000b
+  .P: equ 1000_0000b
 
-struc Gate
-  .offset_lo: resw 1
-  .segment: resw 1
+struc GateDescriptor
+  .offsetLow: resw 1
+  .segmentSelector: resw 1
   .zero: resb 1
   .flags: resb 1
-  .offset_hi: resw 1
+  .offsetHigh: resw 1
 endstruc
 
 struc Idt
@@ -24,43 +29,72 @@ struc Idt
   .base: resd 1
 endstruc
 
-section .rodata
-idt.~gates:
-  %rep 256
-    istruc Gate
-      at Gate.offset_lo, dw 0
-      at Gate.segment, dw 0
-      at Gate.zero, db 0
-      at Gate.flags, db 0
-      at Gate.offset_hi, dw 0
-    iend
-  %endrep
-idt.#gates equ $ - idt.~gates
+section .data
+idt.table:
+  times 256 * GateDescriptor_size db 0
+  .#: equ $ - idt.table
 idt.idt:
   istruc Idt
-    at Idt.limit, dw idt.#gates - 1
-    at Idt.base, dd idt.~gates
+    at Idt.limit, dw idt.table.# - 1
+    at Idt.base, dd idt.table
   iend
 
 section .text
-idt.init: ; : :
+idt.init: ; : : eax edx
+  %macro _unhandled 2
+    mov eax, %1
+    mov edx, idt.unhandled.%2
+    call idt.setGate
+  %endmacro
+
+  _unhandled 0, DE
+  _unhandled 1, DB
+  _unhandled 3, BP
+  _unhandled 4, OF
+  _unhandled 5, BR
+  _unhandled 6, UD
+  _unhandled 7, NM
+  _unhandled 8, DF
+  _unhandled 0Ah, TS
+  _unhandled 0Bh, NP
+  _unhandled 0Ch, SS
+  _unhandled 0Dh, GP
+  _unhandled 0Eh, PF
+  _unhandled 10h, MF
+  _unhandled 11h, AC
+  _unhandled 12h, MC
+  _unhandled 13h, XM
+  _unhandled 14h, VE
+
   lidt [idt.idt]
   ret
 
-idt._gate:
-  lea eax, [idt.~gates + eax * Gate_size]
-  mov [eax + Gate.offset_lo], dx
-  shr edx, 0x10
-  mov [eax + Gate.offset_hi], dx
-  mov [eax + Gate.segment], cs
+idt.setGate: ; eax(vector) edx(handler) : : eax edx
+  lea eax, [idt.table + eax * GateDescriptor_size]
+  and byte [eax + GateDescriptor.flags], ~Flags.P
+  mov [eax + GateDescriptor.offsetLow], dx
+  shr edx, 10h
+  mov [eax + GateDescriptor.offsetHigh], dx
+  mov [eax + GateDescriptor.segmentSelector], cs
+  mov byte [eax + GateDescriptor.flags], Gate.INTERRUPT | Flags.D | Flags.DPL0 | Flags.P
   ret
 
-idt.int: ; eax(vec) edx(handler) : : eax edx
-  call idt._gate
-  mov byte [eax + Gate.flags], Gate.INTERRUPT | Flags.D | Flags.DPL0 | Flags.P
-  ret
-
-idt.trap: ; eax(vec) edx(handler) : : eax edx
-  call idt._gate
-  mov byte [eax + Gate.flags], Gate.TRAP | Flags.D | Flags.DPL0 | Flags.P
-  ret
+idt.unhandled:
+  .DE: panic 'divide error'
+  .DB: panic 'debug exception'
+  .BP: panic 'breakpoint'
+  .OF: panic 'overflow'
+  .BR: panic 'BOUND range exceeded'
+  .UD: panic 'invalid opcode'
+  .NM: panic 'device not available'
+  .DF: panic 'double fault'
+  .TS: panic 'invalid TSS'
+  .NP: panic 'segment not present'
+  .SS: panic 'stack-segment fault'
+  .GP: panic 'general protection'
+  .PF: panic 'page fault'
+  .MF: panic 'x87 FPU floating-point error'
+  .AC: panic 'alignment check'
+  .MC: panic 'machine check'
+  .XM: panic 'SIMD floating-point exception'
+  .VE: panic 'virtualization exception'

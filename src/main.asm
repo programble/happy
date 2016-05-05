@@ -14,5 +14,5 @@ main.main:
   string `Hello, world!\n`
   call vga.print
   call mboot.printInfo
-  panic 'ayyyyy lmao'
+  int 3
   ret
