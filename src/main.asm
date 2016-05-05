@@ -1,6 +1,7 @@
 global main.main
 extern vga.attribute, vga.blank, vga.cursorShape
 %include "macro.mac"
+%include "core.mac"
 %include "vga.mac"
 %include "text.mac"
 
@@ -12,4 +13,5 @@ main.main:
   call vga.cursorShape
   string `Hello, world!\n`
   text.write
+  panic 'this was a triumph'
   ret

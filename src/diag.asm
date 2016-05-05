@@ -1,7 +1,8 @@
 global diag.printEflags, diag.printRegs, diag.printStack
 extern core.boundLower, core.boundUpper, core.stack.$
-extern fmt.hex, vga.writeChar, vga.write, elf.symbolString
+extern fmt.hex, elf.symbolString
 %include "macro.mac"
+%include "text.mac"
 
 Eflags:
   .CF: equ 0000_0000_0000_0000_0000_0000_0000_0001b
@@ -37,13 +38,12 @@ section .text
 diag.printEflags: ; [esp+4](pushfd) : : eax ecx edx ebx esi edi
   mov eax, [esp + 4]
   call fmt.hex
-  call vga.write
+  text.write
 
   %macro _flag 2
     test dword [esp + 4], Eflags.%1
     jz %%flagElse
-    string %2
-    call vga.write
+    text.write %2
     %%flagElse:
   %endmacro
 
@@ -68,11 +68,10 @@ diag.printEflags: ; [esp+4](pushfd) : : eax ecx edx ebx esi edi
 
 diag.printRegs: ; [esp+4](pushad) : : eax ecx edx ebx esi edi
   %macro _reg 2
-    string %1
-    call vga.write
+    text.write %1
     mov eax, [esp + 4 + Pushad.%2]
     call fmt.hex
-    call vga.write
+    text.write
   %endmacro
 
   _reg 'eax ', eax
@@ -91,15 +90,13 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
   .while:
     mov eax, ebp
     call fmt.hex
-    call vga.write
-    mov al, ' '
-    call vga.writeChar
+    text.write
+    text.writeChar ' '
 
     mov eax, [ebp]
     call fmt.hex
-    call vga.write
-    mov al, ' '
-    call vga.writeChar
+    text.write
+    text.writeChar ' '
 
     mov eax, [ebp]
     cmp eax, core.boundLower
@@ -112,15 +109,13 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
     push esi
     mov eax, ecx
     call fmt.hex
-    call vga.write
-    mov al, '+'
-    call vga.writeChar
+    text.write
+    text.writeChar '+'
     pop esi
-    call vga.write
+    text.write
 
     .next:
-    mov al, `\n`
-    call vga.writeChar
+    text.writeChar `\n`
     add ebp, 4
   cmp ebp, core.stack.$
   jb .while

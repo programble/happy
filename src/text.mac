@@ -5,9 +5,19 @@ extern com.writeChar, com.write, vga.writeChar, vga.write
   call vga.writeChar
 %endmacro
 
+%macro text.writeChar 1
+  mov al, %1
+  text.writeChar
+%endmacro
+
 %macro text.write 0
   mov edi, esi
   call com.write
   mov esi, edi
   call vga.write
+%endmacro
+
+%macro text.write 1
+  string %1
+  text.write
 %endmacro

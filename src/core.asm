@@ -1,10 +1,11 @@
 global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
 extern mboot.init, com.init, gdt.init, idt.init, main.main
-extern fmt.dec, fmt.hex, vga.attribute, vga.writeChar, vga.write
+extern fmt.dec, fmt.hex, vga.attribute
 extern diag.printEflags, diag.printRegs, diag.printStack
 %include "macro.mac"
 %include "vga.mac"
+%include "text.mac"
 
 Flags:
   .PAGE_ALIGN_MODS: equ 1
@@ -49,34 +50,30 @@ core.panic: ; eax(eip) ecx(line) edx(file) esi(msg) [esp+4](pushfd) [esp+8](push
   push esi
 
   mov word [vga.attribute], vga.Color.RED << vga.Color.FG
-  string `\n== PANIC ==\n`
-  call vga.write
+  text.write `\n== PANIC ==\n`
 
   pop esi
-  call vga.write
+  text.write
 
   pop eax
   call fmt.hex
-  call vga.write
+  text.write
 
   pop esi
-  call vga.write
+  text.write
 
   pop eax
   call fmt.dec
-  call vga.write
+  text.write
 
-  string `\neflags `
-  call vga.write
+  text.write `\neflags `
   call diag.printEflags
   add esp, 4
-  mov al, `\n`
-  call vga.writeChar
+  text.writeChar `\n`
 
   call diag.printRegs
   add esp, 20h
-  mov al, `\n`
-  call vga.writeChar
+  text.writeChar `\n`
 
   call diag.printStack
 
