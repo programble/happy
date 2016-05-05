@@ -1,6 +1,6 @@
 global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
-extern mboot.init, gdt.init, idt.init, main.main
+extern mboot.init, com.init, gdt.init, idt.init, main.main
 extern fmt.dec, fmt.hex, vga.attribute, vga.writeChar, vga.write
 extern diag.printEflags, diag.printRegs, diag.printStack
 %include "macro.mac"
@@ -31,6 +31,7 @@ core.boot:
   mov esp, core.stack.$
   push dword 0DEADBEEFh
   call mboot.init
+  call com.init
   call gdt.init
   call idt.init
   sti

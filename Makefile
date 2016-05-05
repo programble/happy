@@ -11,7 +11,7 @@ NASM_FLAGS = -f elf32 -i src/ -g
 GENISOIMAGE_FLAGS = \
   -R -b boot/grub/stage2_eltorito \
   -no-emul-boot -boot-load-size 4 -boot-info-table
-QEMU_FLAGS =
+QEMU_FLAGS = -serial stdio
 GDB_FLAGS = \
   -ex 'set disassembly-flavor intel' \
   -ex 'display/i $$pc' \
