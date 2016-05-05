@@ -2,6 +2,7 @@ global mboot.init, mboot.printInfo
 extern elf.init, fmt.bin, fmt.hex, vga.write
 %include "macro.mac"
 %include "core.mac"
+%include "text.mac"
 
 Flags:
   .MEM: equ 1
@@ -65,19 +66,17 @@ mboot.init: ; eax(magic) ebx(info) : : eax ecx ebx
 mboot.printInfo: ; : : eax ecx edx ebp esi edi
   mov ebp, [mboot.info]
 
-  string `flags\t\t`
-  call vga.write
+  text.write `flags\t\t`
   mov eax, [ebp + Info.flags]
   push eax
   call fmt.bin
-  call vga.write
+  text.write
 
   %macro _field 2
-    string %1
-    call vga.write
+    text.write %1
     mov eax, [ebp + Info.%2]
     call fmt.hex
-    call vga.write
+    text.write
   %endmacro
 
   .mem:
@@ -94,10 +93,9 @@ mboot.printInfo: ; : : eax ecx edx ebp esi edi
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  string `\ncmdline\t\t`
-  call vga.write
+  text.write `\ncmdline\t\t`
   mov esi, [ebp + Info.cmdline]
-  call vga.write
+  text.write
 
   .mods:
   test dword [esp], Flags.MODS
@@ -133,10 +131,9 @@ mboot.printInfo: ; : : eax ecx edx ebp esi edi
   .bootLoaderName:
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apmTable
-  string `\nbootLoaderName\t`
-  call vga.write
+  text.write `\nbootLoaderName\t`
   mov esi, [ebp + Info.bootLoaderName]
-  call vga.write
+  text.write
 
   .apmTable:
   test dword [esp], Flags.APM_TABLE
