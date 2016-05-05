@@ -37,7 +37,7 @@ struc Gdt
   .base: resd 1
 endstruc
 
-section .rodata
+section .data
 gdt.table:
   .null:
     dq 0
