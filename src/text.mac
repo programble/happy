@@ -1,0 +1,13 @@
+extern com.writeChar, com.write, vga.writeChar, vga.write
+
+%macro text.writeChar 0
+  call com.writeChar
+  call vga.writeChar
+%endmacro
+
+%macro text.write 0
+  mov edi, esi
+  call com.write
+  mov esi, edi
+  call vga.write
+%endmacro
