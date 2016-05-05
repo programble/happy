@@ -1,5 +1,5 @@
 global mboot.init, mboot.printInfo
-extern elf.init, fmt.bin, fmt.hex, vga.print
+extern elf.init, fmt.bin, fmt.hex, vga.write
 %include "macro.mac"
 %include "core.mac"
 
@@ -66,18 +66,18 @@ mboot.printInfo: ; : : eax ecx edx ebp esi edi
   mov ebp, [mboot.info]
 
   string `flags\t\t`
-  call vga.print
+  call vga.write
   mov eax, [ebp + Info.flags]
   push eax
   call fmt.bin
-  call vga.print
+  call vga.write
 
   %macro _field 2
     string %1
-    call vga.print
+    call vga.write
     mov eax, [ebp + Info.%2]
     call fmt.hex
-    call vga.print
+    call vga.write
   %endmacro
 
   .mem:
@@ -95,9 +95,9 @@ mboot.printInfo: ; : : eax ecx edx ebp esi edi
   test dword [esp], Flags.CMDLINE
   jz .mods
   string `\ncmdline\t\t`
-  call vga.print
+  call vga.write
   mov esi, [ebp + Info.cmdline]
-  call vga.print
+  call vga.write
 
   .mods:
   test dword [esp], Flags.MODS
@@ -134,9 +134,9 @@ mboot.printInfo: ; : : eax ecx edx ebp esi edi
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apmTable
   string `\nbootLoaderName\t`
-  call vga.print
+  call vga.write
   mov esi, [ebp + Info.bootLoaderName]
-  call vga.print
+  call vga.write
 
   .apmTable:
   test dword [esp], Flags.APM_TABLE

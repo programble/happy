@@ -1,4 +1,4 @@
-global vga.blank, vga.printChar, vga.print, vga.cursorShape
+global vga.blank, vga.writeChar, vga.write, vga.cursorShape
 global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
 %include "macro.mac"
 %include "vga.mac"
@@ -26,12 +26,12 @@ vga.blank: ; : : eax ecx edx edi
   mov [vga.pointer], edi
   jmp vga._cursorMove
 
-vga.printChar: ; al(char) : : eax ecx edx esi edi
+vga.writeChar: ; al(char) : : eax ecx edx esi edi
   mov esi, vga.charString
   mov [esi], al
-  jmp vga.print
+  jmp vga.write
 
-vga.print: ; esi(string) : : eax ecx edx esi edi
+vga.write: ; esi(string) : : eax ecx edx esi edi
   mov edi, [vga.pointer]
   mov ax, [vga.attribute]
 
