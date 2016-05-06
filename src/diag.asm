@@ -1,6 +1,6 @@
 global diag.printEflags, diag.printRegs, diag.printStack
 extern core.boundLower, core.boundUpper, core.stack.$
-extern fmt.hex, elf.symbolString
+extern fmt.hex, elf.symbolStringOffset
 %include "macro.mac"
 %include "text.mac"
 
@@ -103,7 +103,7 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
     jb .next
     cmp eax, core.boundUpper
     ja .next
-    call elf.symbolString
+    call elf.symbolStringOffset
     test esi, esi
     jz .next
     push esi

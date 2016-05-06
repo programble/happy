@@ -10,5 +10,5 @@ main.main:
   xor al, al
   call vga.cursorShape
   text.write `Hello, world!\n`
-  call mboot.printInfo
+  panic 'asdf'
   ret

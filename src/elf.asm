@@ -1,4 +1,4 @@
-global elf.init, elf.symbolString
+global elf.init, elf.symbolString, elf.symbolStringOffset
 
 ShType:
   .NULL: equ 0
@@ -87,24 +87,18 @@ elf.init: ; ecx(shdr_num) ebx(shdr_addr) : : eax ecx ebx
   loop elf.init
   ret
 
-elf.symbolString: ; eax(val) : ecx(offset) esi(name) : eax
+elf.symbolString: ; eax(val) : esi(name) :
   cmp dword [elf.symtab], 0
   je .null
+  .skipCheck:
 
-  xor ecx, ecx
-  .whileOffset:
-    mov esi, [elf.symtab]
-    .whileSym:
-      cmp dword [esi + Sym.value], eax
-      je .break
-      add esi, Sym_size
-    cmp esi, [elf.symtab.$]
-    jb .whileSym
-
-    dec eax
-    inc ecx
-  cmp ecx, 100h
-  jne .whileOffset
+  mov esi, [elf.symtab]
+  .while:
+    cmp dword [esi + Sym.value], eax
+    je .break
+    add esi, Sym_size
+  cmp esi, [elf.symtab.$]
+  jb .while
 
   .null:
   xor esi, esi
@@ -113,4 +107,22 @@ elf.symbolString: ; eax(val) : ecx(offset) esi(name) : eax
   .break:
   mov esi, [esi + Sym.name]
   add esi, [elf.strtab]
+  ret
+
+elf.symbolStringOffset: ; eax(val) : ecx(offset) esi(name) : eax
+  cmp dword [elf.symtab], 0
+  je .null
+
+  xor ecx, ecx
+  .while:
+    call elf.symbolString.skipCheck
+    jnz .break
+    dec eax
+    inc ecx
+  cmp ecx, 100h
+  jb .while
+
+  .null:
+  xor esi, esi
+  .break:
   ret
