@@ -32,8 +32,11 @@ fmt.dec: ; eax : esi : eax edx ebx
   .for:
     xor edx, edx
     div ebx
+    test al, al
+    jnz .nz
     test dl, dl
     jz .break
+    .nz:
     add dl, '0'
     dec esi
     mov [esi], dl
