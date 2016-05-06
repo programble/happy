@@ -1,6 +1,6 @@
-global diag.printEflags, diag.printRegs, diag.printStack
+global diag.printEflags, diag.printRegs, diag.printStack, diag.printMem
 extern core.boundLower, core.boundUpper, core.stack.$
-extern fmt.hex, elf.symbolStringOffset
+extern fmt.hex, elf.symbolString, elf.symbolStringOffset
 %include "macro.mac"
 %include "text.mac"
 
@@ -120,4 +120,52 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
   cmp ebp, core.stack.$
   jb .while
 
+  ret
+
+diag.printMem: ; esi(mem) ecx(count) : : eax ecx edx esi edi
+  .for:
+    test esi, 0Fh
+    jnz .printDword
+
+    .printAddr:
+    mov eax, esi
+    mpush esi, ecx
+    call fmt.hex
+    text.write
+    text.write ': '
+    mpop esi, ecx
+
+    .printDword:
+    lodsd
+    mpush esi, ecx
+    call fmt.hex
+    text.write
+    text.writeChar ' '
+    mpop esi, ecx
+
+    test esi, 0Fh
+    jnz .next
+
+    .printAscii:
+    mpush esi, ecx
+    mov ecx, 10h
+    sub esi, ecx
+    .forByte:
+      lodsb
+      test al, 1110_0000b
+      js .nonPrintable
+      jnz .printable
+      .nonPrintable:
+      mov al, 7
+      .printable:
+      mpush esi, ecx
+      text.writeChar
+      mpop esi, ecx
+    loop .forByte
+
+    text.writeChar `\n`
+    mpop esi, ecx
+  .next:
+  dec ecx
+  jnz .for
   ret
