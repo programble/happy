@@ -156,7 +156,7 @@ diag.printMem: ; esi(mem) ecx(count) : : eax ecx edx esi edi
     jnz .printable
 
     .nonPrintable:
-    mov al, 7
+    mov al, '.'
     .printable:
     mpush esi, ecx
     text.writeChar
