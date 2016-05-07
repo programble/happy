@@ -7,11 +7,12 @@ extern vga.attribute, vga.blank, vga.cursorShape
 
 section .text
 main.main:
+  cli
   xor al, al
   call vga.cursorShape
   text.write `Hello, world!\n`
   extern diag.printMem
-  mov esi, vga.BUFFER
-  mov ecx, vga.WIDTH / 4
+  mov esi, 00103000h
+  mov ecx, 60h
   call diag.printMem
   ret

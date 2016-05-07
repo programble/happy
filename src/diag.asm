@@ -123,49 +123,52 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
   ret
 
 diag.printMem: ; esi(mem) ecx(count) : : eax ecx edx esi edi
+  push ecx
+  test esi, 0Fh
+  jnz .printDword
+
+  .printAddr:
+  mov eax, esi
+  push esi
+  call fmt.hex
+  text.write
+  text.write ': '
+  pop esi
+
+  .printDword:
+  lodsd
+  push esi
+  call fmt.hex
+  text.write
+  text.writeChar ' '
+  pop esi
+
+  test esi, 0Fh
+  jnz .next
+
+  .printAscii:
+  mov ecx, 10h
+  sub esi, ecx
   .for:
-    test esi, 0Fh
-    jnz .printDword
+    lodsb
+    test al, 1110_0000b
+    js .nonPrintable
+    jnz .printable
 
-    .printAddr:
-    mov eax, esi
+    .nonPrintable:
+    mov al, 7
+    .printable:
     mpush esi, ecx
-    call fmt.hex
-    text.write
-    text.write ': '
+    text.writeChar
     mpop esi, ecx
+  loop .for
 
-    .printDword:
-    lodsd
-    mpush esi, ecx
-    call fmt.hex
-    text.write
-    text.writeChar ' '
-    mpop esi, ecx
+  push esi
+  text.writeChar `\n`
+  pop esi
 
-    test esi, 0Fh
-    jnz .next
-
-    .printAscii:
-    mpush esi, ecx
-    mov ecx, 10h
-    sub esi, ecx
-    .forByte:
-      lodsb
-      test al, 1110_0000b
-      js .nonPrintable
-      jnz .printable
-      .nonPrintable:
-      mov al, 7
-      .printable:
-      mpush esi, ecx
-      text.writeChar
-      mpop esi, ecx
-    loop .forByte
-
-    text.writeChar `\n`
-    mpop esi, ecx
   .next:
+  pop ecx
   dec ecx
-  jnz .for
+  jnz diag.printMem
   ret
