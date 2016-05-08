@@ -13,8 +13,8 @@ vga.attribute: dw vga.Color.GRAY << vga.Color.FG
 vga.charString: db ' ', 0
 
 section .text
-vga.init: ; : : eax ecx edx edi
-vga.blank: ; : : eax ecx edx edi
+vga.init: ; : : eax ecx(0) edx edi
+vga.blank: ; : : eax ecx(0) edx edi
   mov ax, [vga.attribute]
   shl eax, 10h
   mov ax, [vga.attribute]
@@ -91,7 +91,7 @@ vga.write: ; esi(string) : : eax ecx edx esi edi
   mov [vga.pointer], edi
   jmp vga._cursorMove
 
-vga._scroll: ; : : eax ecx esi edi
+vga._scroll: ; : : eax ecx(0) esi edi
   mov edi, vga.buffer
   mov esi, vga.buffer + vga.WIDTH
   mov ecx, (vga.HEIGHT - 1) * vga.WIDTH / 4
@@ -117,7 +117,7 @@ vga.cursorShape: ; al : : ah dx
   ret
 
 ; TODO: Constants for ports.
-vga._cursorMove: ; edi(pointer) : :
+vga._cursorMove: ; edi(pointer) : : al dx
   sub edi, vga.buffer
   shr di, 1
 

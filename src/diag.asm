@@ -35,7 +35,7 @@ struc Pushad
 endstruc
 
 section .text
-diag.printEflags: ; [esp+4](pushfd) : : eax ecx edx ebx esi edi
+diag.printEflags: ; [esp+4](pushfd) : : eax ecx(0) edx ebx esi edi
   mov eax, [esp + 4]
   call fmt.hex
   text.write
@@ -66,7 +66,7 @@ diag.printEflags: ; [esp+4](pushfd) : : eax ecx edx ebx esi edi
 
   ret
 
-diag.printRegs: ; [esp+4](pushad) : : eax ecx edx ebx esi edi
+diag.printRegs: ; [esp+4](pushad) : : eax ecx(0) edx ebx esi edi
   %macro _reg 2
     text.write %1
     mov eax, [esp + 4 + Pushad.%2]
@@ -85,7 +85,7 @@ diag.printRegs: ; [esp+4](pushad) : : eax ecx edx ebx esi edi
 
   ret
 
-diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
+diag.printStack: ; esp : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, esp
   .while:
     mov eax, ebp
@@ -122,7 +122,7 @@ diag.printStack: ; esp : : eax ecx edx ebx ebp esi edi
 
   ret
 
-diag.printMem: ; esi(mem) ecx(count) : : eax ecx edx esi edi
+diag.printMem: ; esi(mem) ecx(count) : : eax ecx(0) edx esi edi
   push ecx
   test esi, 0Fh
   jnz .printDword

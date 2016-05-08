@@ -78,7 +78,7 @@ com.writeChar: ; al(char) : : ah dx
   ret
 
 ; TODO: Avoid overflowing the buffer?
-com.write: ; esi(string) : : al dx esi
+com.write: ; esi(string) : : al(0) dx esi
   mov dx, Port.COM1.STATUS
   .readyWhile:
     in al, dx

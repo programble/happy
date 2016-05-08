@@ -8,7 +8,7 @@ fmt.output: db '00000000000000000000000000000000', 0
 .$:
 
 section .text
-fmt.bin: ; eax : esi : eax ecx edi
+fmt.bin: ; eax : esi : eax ecx(0) edi
   mov esi, eax
   mov ecx, 20h
   mov edi, fmt.output.$ - 1
@@ -23,7 +23,7 @@ fmt.bin: ; eax : esi : eax ecx edi
   mov esi, edi
   ret
 
-fmt.dec: ; eax : esi : eax edx ebx
+fmt.dec: ; eax : esi : eax(0) edx(0) ebx
   test eax, eax
   jz .zero
 
@@ -49,7 +49,7 @@ fmt.dec: ; eax : esi : eax edx ebx
   .break:
   ret
 
-fmt.hex: ; eax : esi : eax ecx edx ebx
+fmt.hex: ; eax : esi : eax(0) ecx(0) edx ebx
   mov ebx, 10h
   mov esi, fmt.output.$
   mov ecx, 8

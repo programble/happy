@@ -63,7 +63,7 @@ mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   .ret:
   ret
 
-mboot.printInfo: ; : : eax ecx edx ebp esi edi
+mboot.printInfo: ; : : eax ecx(0) edx ebp esi edi
   mov ebp, [mboot.info]
 
   text.write `flags\t\t`
