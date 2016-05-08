@@ -1,4 +1,4 @@
-global pic.init, pic.mask, pic.unmask
+global pic.init, pic.mask, pic.unmask, pic.eoiMaster, pic.eoiSlave
 
 Icw1:
   .ICW1: equ 0001_0000b
@@ -38,7 +38,7 @@ pic.init: ; : : al
   mov al, 0000_0010b
   out Port.SLAVE.DATA, al
 
-  mov al, Icw4.MUPM | Icw4.AEOI
+  mov al, Icw4.MUPM
   out Port.MASTER.DATA, al
   out Port.SLAVE.DATA, al
 
@@ -69,4 +69,15 @@ pic.unmask: ; ax : : dx
   out Port.MASTER.DATA, al
   mov al, ah
   out Port.SLAVE.DATA, al
+  ret
+
+pic.eoiMaster: ; : : al
+  mov al, 20h
+  out Port.MASTER.COMMAND, al
+  ret
+
+pic.eoiSlave: ; : : al
+  mov al, 20h
+  out Port.MASTER.COMMAND, al
+  out Port.SLAVE.COMMAND, al
   ret
