@@ -1,5 +1,5 @@
 global main.main
-extern vga.cursorShape, kbd.readCode, fmt.hex
+extern vga.cursorShape, kbd.readCode, qwerty.map
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -13,9 +13,12 @@ main.main:
   .loop:
     xor eax, eax
     call kbd.readCode
-    call fmt.hex
-    add esi, 6
-    text.write
-    text.writeChar ' '
+    test al, al
+    js .loop
+    add eax, qwerty.map
+    mov al, [eax]
+    test al, al
+    js .loop
+    text.writeChar
   jmp .loop
   ret
