@@ -1,5 +1,5 @@
 global main.main
-extern vga.attribute, vga.blank, vga.cursorShape
+extern vga.cursorShape, kbd.readCode, fmt.hex
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -11,6 +11,11 @@ main.main:
   call vga.cursorShape
   text.write `Hello, world!\n`
   .loop:
-    hlt
+    xor eax, eax
+    call kbd.readCode
+    call fmt.hex
+    add esi, 6
+    text.write
+    text.writeChar ' '
   jmp .loop
   ret
