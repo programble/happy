@@ -1,3 +1,9 @@
+%macro cc 2
+  j%-1 %%else
+  %2
+  %%else:
+%endmacro
+
 %macro mpush 1-*
   %rep %0
     push %1
