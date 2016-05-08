@@ -9,11 +9,10 @@ extern core.panic
   %endif
 
   __SECT__
-  %%panic:
   cli
   pushad
   pushfd
-  mov eax, %%panic
+  mov eax, $
   mov ecx, __LINE__
   mov edx, _PANIC_FILE
   mov esi, %%panicMessage
