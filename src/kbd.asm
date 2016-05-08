@@ -1,30 +1,42 @@
 global kbd.init
-extern idt.setGate, pic.unmask, pic.eoiMaster, fmt.hex
+extern idt.setGate, pic.unmask, pic.eoiMaster, diag.printMem
 %include "core.mac"
 %include "text.mac"
 
-INTERRUPT: equ 21h
-PIC_MASK: equ 0000_0000_0000_00010b
-Port.DATA: equ 60h
+section .bss
+kbd.buffer: resb 100h
+.$:
+
+section .data
+kbd.bufRead: dd kbd.buffer
+kbd.bufWrite: dd kbd.buffer
 
 section .text
 kbd.init: ; : : eax edx
-  mov eax, INTERRUPT
+  mov eax, 21h
   mov edx, kbd.interrupt
   call idt.setGate
-  mov eax, PIC_MASK
+  mov eax, 0000_0000_0000_00010b
   call pic.unmask
   ret
 
 kbd.interrupt: ; : :
   pushad
 
-  xor eax, eax
-  in al, Port.DATA
-  call fmt.hex
-  add esi, 6
-  text.write
-  text.writeChar ' '
+  mov edi, [kbd.bufWrite]
+  in al, 60h
+  stosb
+
+  cmp edi, kbd.buffer.$
+  jb .else
+  mov edi, kbd.buffer
+  .else:
+  mov [kbd.bufWrite], edi
+
+  mov esi, kbd.buffer
+  mov ecx, 40h
+  call diag.printMem
+  text.writeChar `\n`
 
   call pic.eoiMaster
   popad

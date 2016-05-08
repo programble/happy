@@ -10,5 +10,7 @@ main.main:
   xor al, al
   call vga.cursorShape
   text.write `Hello, world!\n`
-  jmp $
+  .loop:
+    hlt
+  jmp .loop
   ret
