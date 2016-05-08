@@ -4,12 +4,12 @@ extern idt.setGate, pic.unmask, pic.eoiMaster, diag.printMem
 %include "text.mac"
 
 section .bss
-kbd.buffer: resb 100h
-.$:
+kbd.buffer: resb 40h
+.#: equ $ - kbd.buffer
 
 section .data
 kbd.bufRead: dd kbd.buffer
-kbd.bufWrite: dd kbd.buffer
+kbd.bufWrite: dd kbd.buffer + 1
 
 section .text
 kbd.init: ; : : eax edx
@@ -23,21 +23,22 @@ kbd.init: ; : : eax edx
 kbd.interrupt: ; : :
   pushad
 
-  mov edi, [kbd.bufWrite]
   in al, 60h
-  stosb
 
-  cmp edi, kbd.buffer.$
-  jb .else
-  mov edi, kbd.buffer
-  .else:
+  mov edi, [kbd.bufWrite]
+  cmp edi, [kbd.bufRead]
+  je .ret
+
+  stosb
+  and edi, ~kbd.buffer.#
   mov [kbd.bufWrite], edi
 
   mov esi, kbd.buffer
-  mov ecx, 40h
+  mov ecx, kbd.buffer.# / 4
   call diag.printMem
   text.writeChar `\n`
 
+  .ret:
   call pic.eoiMaster
   popad
   iret
