@@ -68,23 +68,31 @@ elf.symtab: dd 0
 elf.strtab: dd 0
 
 section .text
-elf.init: ; ecx(shdr_num) ebx(shdr_addr) : : eax ecx ebx
-  cmp dword [ebx + Shdr.type], ShType.SYMTAB
-  jne .strtab
+elf.init: ; ecx(shdr_num) ebx(shdr_addr) : : eax ecx edx(0) ebx
+  push ebx
+
+  .for:
+    cmp dword [ebx + Shdr.type], ShType.SYMTAB
+    je .break
+    add ebx, Shdr_size
+  loop .for
+  add esp, 4
+  ret
+
+  .break:
   mov eax, [ebx + Shdr.addr]
   mov [elf.symtab], eax
   add eax, [ebx + Shdr.size]
   mov [elf.symtab.$], eax
 
-  .strtab:
-  cmp dword [ebx + Shdr.type], ShType.STRTAB
-  jne .next
+  mov eax, [ebx + Shdr.link]
+  mov ecx, Shdr_size
+  mul ecx
+  pop ebx
+  add ebx, eax
   mov eax, [ebx + Shdr.addr]
   mov [elf.strtab], eax
 
-  .next:
-  add ebx, Shdr_size
-  loop elf.init
   ret
 
 elf.symbolString: ; eax(val) : esi(name) :

@@ -49,7 +49,7 @@ section .data
 mboot.info: dd 0
 
 section .text
-mboot.init: ; eax(magic) ebx(info) : : eax ecx ebx
+mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   cmp eax, 2BADB002h
   panicc ne, 'invalid multiboot magic'
   mov [mboot.info], ebx
