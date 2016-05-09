@@ -4,7 +4,9 @@ extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 
 ScanCode:
   .SHIFT_LEFT: equ 2Ah
+  .SHIFT_RIGHT: equ 36h
   .CTRL_LEFT: equ 1Dh
+  .ALT_LEFT: equ 38h
 
 Modifier:
   .SHIFT_LEFT: equ 0000_0001b
@@ -16,9 +18,6 @@ Modifier:
   .ALT_LEFT: equ 0001_0000b
   .ALT_RIGHT: equ 0010_0000b
   .ALT: equ 0011_0000b
-  .CMD_LEFT: equ 0100_0000b
-  .CMD_RIGHT: equ 1000_0000b
-  .CMD: equ 1100_0000b
 
 section .bss
 kbd.buffer: resb 40h
@@ -83,7 +82,9 @@ kbd.readCode: ; : al : eax
   %endmacro
 
   _modifier SHIFT_LEFT
+  _modifier SHIFT_RIGHT
   _modifier CTRL_LEFT
+  _modifier ALT_LEFT
   ret
 
   .setModifier:
