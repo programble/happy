@@ -42,7 +42,9 @@ diag.printEflags: ; [esp+4](pushfd) : : eax ecx(0) edx ebx esi edi
 
   %macro _flag 2
     test dword [esp + 4], Eflags.%1
-    cc nz, text.write %2
+    jz %%flagElse
+    text.write %2
+    %%flagElse:
   %endmacro
 
   _flag CF, ' CF'
