@@ -1,8 +1,6 @@
-global kbd.init, kbd.readCode
-extern idt.setGate, pic.unmask, pic.eoiMaster, diag.printMem
-%include "macro.mac"
-%include "core.mac"
-%include "text.mac"
+global kbd.init, kbd.readCode, kbd.readChar
+extern idt.setGate, pic.unmask, pic.eoiMaster
+extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 
 ScanCode:
   .SHIFT_LEFT: equ 2Ah
@@ -97,4 +95,30 @@ kbd.readCode: ; : al : eax
   .unsetModifier:
   not ah
   and [kbd.modifier], ah
+  ret
+
+kbd.readChar: ; : al : eax
+  call kbd.readCode
+  test al, al
+  js kbd.readChar
+
+  movzx eax, al
+
+  test byte [kbd.modifier], Modifier.CTRL
+  jz .ctrlElse
+  mov al, [qwerty.map.ctrl + eax]
+  jmp .ret
+  .ctrlElse:
+
+  test byte [kbd.modifier], Modifier.SHIFT
+  jz .shiftElse
+  mov al, [qwerty.map.shift + eax]
+  jmp .ret
+  .shiftElse:
+
+  mov al, [qwerty.map + eax]
+
+  .ret:
+  test al, al
+  js kbd.readChar
   ret

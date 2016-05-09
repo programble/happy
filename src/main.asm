@@ -1,5 +1,5 @@
 global main.main
-extern vga.cursorShape, kbd.readCode, qwerty.map
+extern vga.cursorShape, kbd.readChar
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -11,14 +11,7 @@ main.main:
   call vga.cursorShape
   text.write `Hello, world!\n`
   .loop:
-    call kbd.readCode
-    test al, al
-    js .loop
-    movzx eax, al
-    add eax, qwerty.map
-    mov al, [eax]
-    test al, al
-    js .loop
+    call kbd.readChar
     text.writeChar
   jmp .loop
   ret
