@@ -11,10 +11,10 @@ main.main:
   call vga.cursorShape
   text.write `Hello, world!\n`
   .loop:
-    xor eax, eax
     call kbd.readCode
     test al, al
     js .loop
+    movzx eax, al
     add eax, qwerty.map
     mov al, [eax]
     test al, al
