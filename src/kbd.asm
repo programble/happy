@@ -1,6 +1,8 @@
-global kbd.init, kbd.readCode, kbd.readChar
+global kbd.init, kbd.readCode, kbd.readChar, kbd.readLine
 extern idt.setGate, pic.unmask, pic.eoiMaster
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
+%include "macro.mac"
+%include "text.mac"
 
 ScanCode:
   .SHIFT_LEFT: equ 2Ah
@@ -22,6 +24,9 @@ Modifier:
 section .bss
 kbd.buffer: resb 40h
 .#: equ $ - kbd.buffer
+
+kbd.line: resb 100h
+.$:
 
 section .data
 kbd.bufRead: dd kbd.buffer
@@ -122,4 +127,22 @@ kbd.readChar: ; : al : eax
   .ret:
   test al, al
   js kbd.readChar
+  ret
+
+kbd.readLine: ; : esi : eax ecx edx edi
+  mov edi, kbd.line
+  .while:
+    call kbd.readChar
+    mpush eax, edi
+    text.writeChar
+    mpop eax, edi
+    cmp al, `\n`
+    je .break
+    stosb
+  cmp edi, kbd.line.$ - 1
+  jb .while
+
+  .break:
+  mov byte [edi], 0
+  mov esi, kbd.line
   ret

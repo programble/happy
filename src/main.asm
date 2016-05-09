@@ -1,17 +1,14 @@
 global main.main
-extern vga.cursorShape, kbd.readChar
-%include "macro.mac"
-%include "core.mac"
-%include "vga.mac"
+extern vga.cursorShape, kbd.readLine
 %include "text.mac"
 
 section .text
 main.main:
   xor al, al
   call vga.cursorShape
-  text.write `Hello, world!\n`
   .loop:
-    call kbd.readChar
-    text.writeChar
+    call kbd.readLine
+    text.write
+    text.writeChar `\n`
   jmp .loop
   ret
