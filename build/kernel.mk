@@ -2,7 +2,7 @@ LD = ld
 NASM = nasm
 
 LD_FLAGS = -m elf_i386 -nostdlib
-NASM_FLAGS = -f elf32 -i src/ -g
+NASM_FLAGS = -f elf32 -p build/cpu.mac -i src/ -g
 
 KERNEL = out/happy.elf
 LD_SCRIPT = build/friendship.ld

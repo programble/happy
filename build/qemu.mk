@@ -1,6 +1,6 @@
 QEMU = qemu-system-i386
 
-QEMU_FLAGS = -serial stdio
+QEMU_FLAGS = -cpu 486,-vme -serial stdio
 
 qemu: qemu-iso
 
