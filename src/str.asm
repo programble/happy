@@ -8,6 +8,6 @@ str.shittyHash: ; esi : edx : al(0) esi
     jnz .xor
     ret
     .xor:
-    xor dl, al
     rol edx, 8
+    xor dl, al
   jmp .while
