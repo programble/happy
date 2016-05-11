@@ -10,4 +10,4 @@ str.shittyHash: ; esi : edx : al(0) esi
     .xor:
     xor dl, al
     rol edx, 8
-    jmp .while
+  jmp .while
