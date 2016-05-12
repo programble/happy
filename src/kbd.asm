@@ -1,8 +1,23 @@
-global kbd.init, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printBuffers
-extern idt.setGate, pic.unmask, pic.eoiMaster, diag.printMem
+global kbd.init, kbd.reset, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printBuffers
+extern idt.setGate, pic.unmask, core.halt, pic.eoiMaster, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 %include "macro.mac"
 %include "text.mac"
+
+Port:
+  .DATA: equ 60h
+  .COMMAND: equ 64h
+
+Status:
+  .OUTPUT: equ 0000_0001b
+  .INPUT: equ 0000_0010b
+  .SYSTEM: equ 0000_0100b
+  .COMMAND: equ 0000_1000b
+  .TIMEOUT: equ 0100_0000b
+  .PARITY: equ 1000_0000b
+
+Command:
+  .RESET: equ 0FEh
 
 ScanCode:
   .SHIFT_LEFT: equ 2Ah
@@ -43,10 +58,18 @@ kbd.init: ; : : eax edx
   call pic.unmask
   ret
 
+kbd.reset: ; : :
+  in al, Port.COMMAND
+  test al, Status.INPUT
+  jnz kbd.reset
+  mov al, Command.RESET
+  out Port.COMMAND, al
+  jmp core.halt
+
 kbd.interrupt: ; : :
   pushad
 
-  in al, 60h
+  in al, Port.DATA
 
   mov edi, [kbd.bufWrite]
   cmp edi, [kbd.bufRead]
