@@ -1,4 +1,4 @@
-global mboot.init, mboot.printInfo
+global mboot.init, mboot.printInfo, mboot.printMmap
 extern elf.init, fmt.bin, fmt.hex, vga.write
 %include "macro.mac"
 %include "core.mac"
@@ -45,6 +45,13 @@ struc Info
   .vbeInterfaceLen: resd 1
 endstruc
 
+struc Mmap
+  .size: resd 1
+  .baseAddr: resq 1
+  .length: resq 1
+  .type: resd 1
+endstruc
+
 section .data
 mboot.info: dd 0
 
@@ -63,7 +70,7 @@ mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   .ret:
   ret
 
-mboot.printInfo: ; : : eax ecx(0) edx ebp esi edi
+mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, [mboot.info]
 
   text.write `flags\t\t`
@@ -152,4 +159,46 @@ mboot.printInfo: ; : : eax ecx(0) edx ebp esi edi
 
   .ret:
   add esp, 4
+  ret
+
+mboot.printMmap: ; : : eax ecx edx ebx ebp esi edi
+  mov ebp, [mboot.info]
+  test dword [ebp + Info.flags], Flags.MMAP
+  jz .ret
+
+  mov eax, [ebp + Info.mmapAddr]
+  add eax, [ebp + Info.mmapLength]
+  push eax
+  mov ebp, [ebp + Info.mmapAddr]
+
+  .while:
+    mov eax, [ebp + Mmap.baseAddr + 4]
+    call fmt.hex
+    text.write
+    mov eax, [ebp + Mmap.baseAddr]
+    call fmt.hex
+    text.write
+    text.writeChar ' '
+
+    mov eax, [ebp + Mmap.length + 4]
+    call fmt.hex
+    text.write
+    mov eax, [ebp + Mmap.length]
+    call fmt.hex
+    text.write
+    text.writeChar ' '
+
+    mov eax, [ebp + Mmap.type]
+    call fmt.hex
+    text.write
+    text.writeChar `\n`
+
+    add ebp, [ebp + Mmap.size]
+    add ebp, 4
+  cmp ebp, [esp]
+  jb .while
+
+  add esp, 4
+
+  .ret:
   ret

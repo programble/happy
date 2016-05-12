@@ -1,7 +1,7 @@
 global main.main
 extern vga.attribute, kbd.readLine, str.shittyHash, fmt.hex
 extern vga.blank, core.halt, kbd.reset, diag.printEflags, diag.printRegs, diag.printStack
-extern mboot.printInfo, kbd.printBuffers
+extern mboot.printInfo, mboot.printMmap, kbd.printBuffers
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -38,6 +38,8 @@ main.main:
     _cmd 74616318h, main.stack
 
     _cmd 626F6F19h, mboot.printInfo ; mboot
+    _cmd 6D6D6170h, mboot.printMmap ; mmap
+
     _cmd 006B6264h, kbd.printBuffers ; kbd
 
     .unknown:
@@ -52,7 +54,7 @@ main.main:
   jmp .prompt
 
 main.help:
-  text.write 'help clear halt panic reset eflags regs stack mboot kbd'
+  text.write 'help clear halt panic reset eflags regs stack mboot mmap kbd'
   ret
 
 main.clear:
