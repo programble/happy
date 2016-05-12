@@ -1,5 +1,5 @@
-global kbd.init, kbd.readCode, kbd.readChar, kbd.readLine
-extern idt.setGate, pic.unmask, pic.eoiMaster
+global kbd.init, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printBuffers
+extern idt.setGate, pic.unmask, pic.eoiMaster, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 %include "macro.mac"
 %include "text.mac"
@@ -146,3 +146,12 @@ kbd.readLine: ; : esi : eax ecx edx edi
   mov byte [edi], 0
   mov esi, kbd.line
   ret
+
+kbd.printBuffers: ; : : eax ecx(0) edx esi edi
+  mov esi, kbd.buffer
+  mov ecx, kbd.buffer.# / 4
+  call diag.printMem
+
+  mov esi, kbd.line
+  mov ecx, (kbd.line.$ - kbd.line) / 4
+  jmp diag.printMem
