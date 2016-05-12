@@ -1,9 +1,10 @@
 global main.main
-extern vga.cursorShape, kbd.readLine, str.shittyHash, fmt.hex
+extern vga.cursorShape, vga.attribute, kbd.readLine, str.shittyHash, fmt.hex
 extern core.halt, vga.blank, diag.printEflags, diag.printRegs, diag.printStack, mboot.printInfo
 %include "macro.mac"
 %include "core.mac"
 %include "text.mac"
+%include "vga.mac"
 
 section .text
 main.main:
@@ -19,7 +20,10 @@ main.main:
   %endmacro
 
   .loop:
+    text.write '> '
+    mov word [vga.attribute], (vga.Color.GRAY | vga.Color.BRIGHT) << vga.Color.FG
     call kbd.readLine
+    mov word [vga.attribute], vga.Color.GRAY << vga.Color.FG
     call str.shittyHash
 
     _cmd 68656C70h, main.help
@@ -28,10 +32,12 @@ main.main:
     _cmd 616E6913h, main.panic
     _cmd 6C610215h, main.eflags
     _cmd 72656773h, main.regs
-    _cmd 74616318h, diag.printStack ; stack
+    _cmd 74616318h, main.stack
     _cmd 626F6F19h, mboot.printInfo ; mboot
 
-    mov eax, edx
+    push edx
+    text.write 'unknown command '
+    pop eax
     call fmt.hex
     text.write
 
@@ -58,4 +64,8 @@ main.regs:
   pushad
   call diag.printRegs
   add esp, 20h
+  ret
+
+main.stack:
+  call diag.printStack
   ret
