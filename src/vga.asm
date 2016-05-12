@@ -1,4 +1,4 @@
-global vga.init, vga.blank, vga.writeChar, vga.write, vga.cursorShape
+global vga.init, vga.blank, vga.writeChar, vga.write
 global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
 %include "macro.mac"
 %include "vga.mac"
@@ -14,6 +14,14 @@ vga.charString: db ' ', 0
 
 section .text
 vga.init: ; : : eax ecx(0) edx edi
+  mov dx, 3D4h
+  mov al, 0Ah
+  out dx, al
+  inc dx
+  mov al, 10h
+  out dx, al
+  jmp vga.blank
+
 vga.blank: ; : : eax ecx(0) edx edi
   mov ax, [vga.attribute]
   shl eax, 10h
@@ -24,8 +32,11 @@ vga.blank: ; : : eax ecx(0) edx edi
   rep stosd
 
   mov edi, vga.buffer
+  rol ah, 4
+  mov [edi + 1], ah
+
   mov [vga.pointer], edi
-  jmp vga._cursorMove
+  ret
 
 vga.writeChar: ; al(char) : : eax ecx edx esi edi
   mov esi, vga.charString
@@ -35,6 +46,7 @@ vga.writeChar: ; al(char) : : eax ecx edx esi edi
 vga.write: ; esi(string) : : eax ecx edx esi edi
   mov edi, [vga.pointer]
   mov ax, [vga.attribute]
+  mov [edi + 1], ah
 
   .while:
     cmp edi, vga.buffer.$
@@ -88,8 +100,11 @@ vga.write: ; esi(string) : : eax ecx edx esi edi
   jmp .while
 
   .break:
+  rol ah, 4
+  mov [edi + 1], ah
+
   mov [vga.pointer], edi
-  jmp vga._cursorMove
+  ret
 
 vga._scroll: ; : : eax ecx(0) esi edi
   mov edi, vga.buffer
@@ -102,40 +117,5 @@ vga._scroll: ; : : eax ecx(0) esi edi
   mov ax, [vga.attribute]
   mov ecx, vga.WIDTH / 4
   rep stosd
-
-  ret
-
-; TODO: Constants for ports.
-vga.cursorShape: ; al : : ah dx
-  mov ah, al
-  mov dx, 3D4h
-  mov al, 0Ah
-  out dx, al
-  inc dx
-  mov al, ah
-  out dx, al
-  ret
-
-; TODO: Constants for ports.
-vga._cursorMove: ; edi(pointer) : : al dx
-  sub edi, vga.buffer
-  shr di, 1
-
-  mov dx, 3D4h
-  mov al, 0Eh
-  out dx, al
-
-  inc dx
-  mov ax, di
-  shr ax, 8
-  out dx, al
-
-  dec dx
-  mov al, 0Fh
-  out dx, al
-
-  inc dx
-  mov ax, di
-  out dx, al
 
   ret

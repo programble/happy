@@ -1,16 +1,14 @@
 global main.main
-extern vga.cursorShape, vga.attribute, kbd.readLine, str.shittyHash, fmt.hex
-extern core.halt, vga.blank, diag.printEflags, diag.printRegs, diag.printStack, mboot.printInfo
+extern vga.attribute, kbd.readLine, str.shittyHash, fmt.hex
+extern core.halt, vga.blank, diag.printEflags, diag.printRegs, diag.printStack
+extern mboot.printInfo
 %include "macro.mac"
 %include "core.mac"
-%include "text.mac"
 %include "vga.mac"
+%include "text.mac"
 
 section .text
 main.main:
-  xor al, al
-  call vga.cursorShape
-
   %macro _cmd 2
     cmp edx, %1
     jne %%cmdElse
@@ -19,22 +17,28 @@ main.main:
     %%cmdElse:
   %endmacro
 
-  .loop:
-    text.write '> '
+  .prompt:
+    text.writeChar '>'
     mov word [vga.attribute], (vga.Color.GRAY | vga.Color.BRIGHT) << vga.Color.FG
+    text.writeChar ' '
     call kbd.readLine
     mov word [vga.attribute], vga.Color.GRAY << vga.Color.FG
+
     call str.shittyHash
 
     _cmd 68656C70h, main.help
-    _cmd 6C656111h, vga.blank ; clear
+    _cmd 6C656111h, main.clear
+
     _cmd 68616C74h, core.halt
     _cmd 616E6913h, main.panic
+
     _cmd 6C610215h, main.eflags
     _cmd 72656773h, main.regs
     _cmd 74616318h, main.stack
+
     _cmd 626F6F19h, mboot.printInfo ; mboot
 
+    .unknown:
     push edx
     text.write 'unknown command '
     pop eax
@@ -43,13 +47,16 @@ main.main:
 
     .next:
     text.writeChar `\n`
-  jmp .loop
-  ret
+  jmp .prompt
 
 main.help:
-  string 'help clear halt panic eflags regs stack mboot'
-  text.write
+  text.write 'help clear halt panic eflags regs stack mboot'
   ret
+
+main.clear:
+  call vga.blank
+  add esp, 4
+  jmp main.main.prompt
 
 main.panic:
   panic 'panic command'
