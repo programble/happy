@@ -157,17 +157,32 @@ kbd.readLine: ; : ecx(lineLen) esi(line) : eax edx edi
   mov edi, kbd.line
   .while:
     call kbd.readChar
-    _push eax, ecx, edi
-    _writeChar
-    _pop eax, ecx, edi
     cmp al, `\n`
     je .break
+
+    cmp al, `\b`
+    jne .stos
+    cmp edi, kbd.line
+    je .while
+    dec edi
+    dec ecx
+    jmp .write
+
+    .stos:
     stosb
     inc ecx
-  cmp edi, kbd.line.$ - 1
+
+    .write:
+    _push ecx, edi
+    _writeChar
+    _pop ecx, edi
+  cmp edi, kbd.line.$
   jb .while
 
   .break:
+  push ecx
+  _writeChar `\n`
+  pop ecx
   mov esi, kbd.line
 ret
 
