@@ -10,8 +10,11 @@ LD_SCRIPT = build/friendship.ld
 SOURCES = $(wildcard src/*.asm)
 OBJECTS = $(SOURCES:src/%.asm=out/obj/%.o)
 DEPS = $(SOURCES:src/%.asm=out/dep/%.mk)
+EXPANDS = $(SOURCES:src/%.asm=out/expand/%.asm)
 
 kernel: $(KERNEL)
+
+expand: $(EXPANDS)
 
 $(KERNEL): $(LD_SCRIPT) $(OBJECTS)
 	@mkdir -p out
@@ -23,4 +26,8 @@ out/obj/%.o: src/%.asm
 	@mkdir -p out/obj out/dep
 	$(NASM) $(NASM_FLAGS) -MD $(@:out/obj/%.o=out/dep/%.mk) -o $@ $<
 
-.PHONY: kernel
+out/expand/%.asm: src/%.asm
+	@mkdir -p out/expand
+	$(NASM) $(NASM_FLAGS) -E -o $@ $<
+
+.PHONY: kernel expand
