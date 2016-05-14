@@ -80,7 +80,7 @@ main.main: ; : : *
     _writeChar `\n`
   jmp .prompt
 
-main.help
+main.help:
   mov ecx, main.cmd.#
   mov esi, main.cmd
   _write
