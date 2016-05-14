@@ -1,0 +1,24 @@
+extern com.writeChar, com.write
+extern vga.writeChar, vga.write
+
+%macro _writeChar 0 ; al(char) : : ax ecx(0) edx esi edi
+  call com.writeChar
+  call vga.writeChar
+%endmacro
+
+%macro _writeChar 1 ; : : ax ecx(0) edx esi edi
+  mov al, %1
+  _writeChar
+%endmacro
+
+%macro _write 0 ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
+  _push ecx, esi
+  call com.write
+  _pop ecx, esi
+  call vga.write
+%endmacro
+
+%macro _write 1 ; : : ax ecx(0) edx esi edi
+  _string %1
+  _write
+%endmacro

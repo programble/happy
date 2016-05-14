@@ -1,16 +1,50 @@
 global main.main
-extern vga.attribute, kbd.readLine, str.shittyHash, fmt.hex
-extern vga.blank, core.halt, kbd.reset, diag.printEflags, diag.printRegs, diag.printStack
-extern mboot.printInfo, mboot.printMmap, kbd.printBuffers
+extern vga.attribute, kbd.readLine, str.equal?
+extern vga.blank, core.halt, kbd.reset
+extern diag.printEflags, diag.printRegs, diag.printStack
+extern mboot.printInfo, mboot.printMmap
+extern kbd.printBuffers
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
-%include "text.mac"
+%include "write.mac"
+
+section .rodata
+main.cmd:
+  %macro _cmdString 2
+    .%1: db %2
+    .%1.#: equ $ - .%1
+    db ' '
+  %endmacro
+
+  _cmdString help, 'help'
+  _cmdString clear, 'clear'
+
+  _cmdString halt, 'halt'
+  _cmdString panic, 'panic'
+  _cmdString reset, 'reset'
+
+  _cmdString eflags, 'eflags'
+  _cmdString regs, 'regs'
+  _cmdString stack, 'stack'
+
+  _cmdString mboot, 'mboot'
+  _cmdString mmap, 'mmap'
+
+  _cmdString kbd, 'kbd'
+
+  .#: equ $ - main.cmd
 
 section .text
-main.main:
+main.main: ; : : *
+  _write `You'll never be happy.\n`
+
   %macro _cmd 2
-    cmp edx, %1
+    mov edx, main.cmd.%1.#
+    mov edi, main.cmd.%1
+    _push ecx, esi
+    call str.equal?
+    _pop ecx, esi
     jne %%cmdElse
     call %2
     jmp .next
@@ -18,65 +52,61 @@ main.main:
   %endmacro
 
   .prompt:
-    text.writeChar '>'
-    mov word [vga.attribute], (vga.Color.GRAY | vga.Color.BRIGHT) << vga.Color.FG
-    text.writeChar ' '
+    _writeChar '>'
+    mov byte [vga.attribute], vga.Color.GRAY | vga.Color.BRIGHT
+    _writeChar ' '
     call kbd.readLine
-    mov word [vga.attribute], vga.Color.GRAY << vga.Color.FG
+    mov byte [vga.attribute], vga.Color.GRAY
 
-    call str.shittyHash
+    _cmd help, main.help
+    _cmd clear, main.clear
 
-    _cmd 68656C70h, main.help
-    _cmd 6C656111h, main.clear
+    _cmd halt, core.halt
+    _cmd panic, main.panic
+    _cmd reset, kbd.reset
 
-    _cmd 68616C74h, core.halt
-    _cmd 616E6913h, main.panic
-    _cmd 65736506h, kbd.reset
+    _cmd eflags, main.eflags
+    _cmd regs, main.regs
+    _cmd stack, main.stack
 
-    _cmd 6C610215h, main.eflags
-    _cmd 72656773h, main.regs
-    _cmd 74616318h, main.stack
+    _cmd mboot, mboot.printInfo
+    _cmd mmap, mboot.printMmap
 
-    _cmd 626F6F19h, mboot.printInfo ; mboot
-    _cmd 6D6D6170h, mboot.printMmap ; mmap
+    _cmd kbd, kbd.printBuffers
 
-    _cmd 006B6264h, kbd.printBuffers ; kbd
-
-    .unknown:
-    push edx
-    text.write 'unknown command '
-    pop eax
-    call fmt.hex
-    text.write
+    _writeChar '?'
 
     .next:
-    text.writeChar `\n`
+    _writeChar `\n`
   jmp .prompt
 
-main.help:
-  text.write 'help clear halt panic reset eflags regs stack mboot mmap kbd'
-  ret
+main.help
+  mov ecx, main.cmd.#
+  mov esi, main.cmd
+  _write
+ret
 
 main.clear:
   call vga.blank
   add esp, 4
-  jmp main.main.prompt
+jmp main.main.prompt
 
 main.panic:
-  panic 'panic command'
+_panic 'panic command'
 
 main.eflags:
   pushfd
-  call diag.printEflags
+  mov eax, [esp]
   add esp, 4
-  ret
+jmp diag.printEflags
 
 main.regs:
   pushad
+  mov ebx, esp
   call diag.printRegs
   add esp, 20h
-  ret
+ret
 
 main.stack:
   call diag.printStack
-  ret
+ret

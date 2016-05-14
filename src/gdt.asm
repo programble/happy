@@ -78,4 +78,4 @@ gdt.init: ; : : ax
   mov gs, ax
   jmp (gdt.table.code - gdt.table):.ret
   .ret:
-  ret
+ret

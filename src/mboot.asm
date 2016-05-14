@@ -1,8 +1,8 @@
 global mboot.init, mboot.printInfo, mboot.printMmap
-extern elf.init, fmt.bin, fmt.hex, vga.write
+extern elf.init, fmt.binDword, fmt.hexDword, str.fromCStr
 %include "macro.mac"
 %include "core.mac"
-%include "text.mac"
+%include "write.mac"
 
 Flags:
   .MEM: equ 1
@@ -58,7 +58,7 @@ mboot.info: dd 0
 section .text
 mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   cmp eax, 2BADB002h
-  panicc ne, 'invalid multiboot magic'
+  _panicc ne, 'invalid multiboot magic'
   mov [mboot.info], ebx
 
   test dword [ebx + Info.flags], Flags.SHDR
@@ -68,22 +68,22 @@ mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   call elf.init
 
   .ret:
-  ret
+ret
 
 mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, [mboot.info]
 
-  text.write `flags\t\t`
+  _write `flags\t\t`
   mov eax, [ebp + Info.flags]
   push eax
-  call fmt.bin
-  text.write
+  call fmt.binDword
+  _write
 
   %macro _field 2
-    text.write %1
+    _write %1
     mov eax, [ebp + Info.%2]
-    call fmt.hex
-    text.write
+    call fmt.hexDword
+    _write
   %endmacro
 
   .mem:
@@ -100,9 +100,10 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  text.write `\ncmdline\t\t`
+  _write `\ncmdline\t\t`
   mov esi, [ebp + Info.cmdline]
-  text.write
+  call str.fromCStr
+  _write
 
   .mods:
   test dword [esp], Flags.MODS
@@ -138,9 +139,10 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .bootLoaderName:
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apmTable
-  text.write `\nbootLoaderName\t`
+  _write `\nbootLoaderName\t`
   mov esi, [ebp + Info.bootLoaderName]
-  text.write
+  call str.fromCStr
+  _write
 
   .apmTable:
   test dword [esp], Flags.APM_TABLE
@@ -159,9 +161,9 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
 
   .ret:
   add esp, 4
-  ret
+ret
 
-mboot.printMmap: ; : : eax ecx edx ebx ebp esi edi
+mboot.printMmap: ; : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, [mboot.info]
   test dword [ebp + Info.flags], Flags.MMAP
   jz .ret
@@ -173,25 +175,25 @@ mboot.printMmap: ; : : eax ecx edx ebx ebp esi edi
 
   .while:
     mov eax, [ebp + Mmap.baseAddr + 4]
-    call fmt.hex
-    text.write
+    call fmt.hexDword
+    _write
     mov eax, [ebp + Mmap.baseAddr]
-    call fmt.hex
-    text.write
-    text.writeChar ' '
+    call fmt.hexDword
+    _write
+    _writeChar ' '
 
     mov eax, [ebp + Mmap.length + 4]
-    call fmt.hex
-    text.write
+    call fmt.hexDword
+    _write
     mov eax, [ebp + Mmap.length]
-    call fmt.hex
-    text.write
-    text.writeChar ' '
+    call fmt.hexDword
+    _write
+    _writeChar ' '
 
     mov eax, [ebp + Mmap.type]
-    call fmt.hex
-    text.write
-    text.writeChar `\n`
+    call fmt.hexDword
+    _write
+    _writeChar `\n`
 
     add ebp, [ebp + Mmap.size]
     add ebp, 4
@@ -201,4 +203,4 @@ mboot.printMmap: ; : : eax ecx edx ebx ebp esi edi
   add esp, 4
 
   .ret:
-  ret
+ret

@@ -1,8 +1,8 @@
 global diag.printEflags, diag.printRegs, diag.printStack, diag.printMem
+extern fmt.hexDword, elf.symbolStringOffset
 extern core.boundLower, core.boundUpper, core.stack.$
-extern fmt.hex, elf.symbolString, elf.symbolStringOffset
 %include "macro.mac"
-%include "text.mac"
+%include "write.mac"
 
 Eflags:
   .CF: equ 0000_0000_0000_0000_0000_0000_0000_0001b
@@ -35,15 +35,15 @@ struc Pushad
 endstruc
 
 section .text
-diag.printEflags: ; [esp+4](pushfd) : : eax ecx(0) edx ebx esi edi
-  mov eax, [esp + 4]
-  call fmt.hex
-  text.write
+diag.printEflags: ; eax(pushfd) : : ax ecx(0) edx esi edi
+  push eax
+  call fmt.hexDword
+  _write
 
   %macro _flag 2
-    test dword [esp + 4], Eflags.%1
+    test dword [esp], Eflags.%1
     jz %%flagElse
-    text.write %2
+    _write %2
     %%flagElse:
   %endmacro
 
@@ -64,14 +64,15 @@ diag.printEflags: ; [esp+4](pushfd) : : eax ecx(0) edx ebx esi edi
   _flag VIP, ' VIP'
   _flag ID, ' ID'
 
-  ret
+  add esp, 4
+ret
 
-diag.printRegs: ; [esp+4](pushad) : : eax ecx(0) edx ebx esi edi
+diag.printRegs: ; ebx(pushad) : : ax ecx(0) edx esi edi
   %macro _reg 2
-    text.write %1
-    mov eax, [esp + 4 + Pushad.%2]
-    call fmt.hex
-    text.write
+    _write %1
+    mov eax, [ebx + Pushad.%2]
+    call fmt.hexDword
+    _write
   %endmacro
 
   _reg 'eax ', eax
@@ -82,65 +83,66 @@ diag.printRegs: ; [esp+4](pushad) : : eax ecx(0) edx ebx esi edi
   _reg ' ebp ', ebp
   _reg ' esi ', esi
   _reg ' edi ', edi
+ret
 
-  ret
-
-diag.printStack: ; esp : : eax ecx(0) edx ebx ebp esi edi
+diag.printStack: ; esp(stack) : : ax ecx(0) edx esi edi
   mov ebp, esp
+
   .while:
     mov eax, ebp
-    call fmt.hex
-    text.write
-    text.writeChar ' '
+    call fmt.hexDword
+    _write
+    _writeChar ' '
 
     mov eax, [ebp]
-    call fmt.hex
-    text.write
-    text.writeChar ' '
+    call fmt.hexDword
+    _write
+    _writeChar ' '
 
     mov eax, [ebp]
     cmp eax, core.boundLower
     jb .next
     cmp eax, core.boundUpper
     ja .next
+
     call elf.symbolStringOffset
-    test esi, esi
+    test ecx, ecx
     jz .next
-    push esi
-    mov eax, ecx
-    call fmt.hex
-    text.write
-    text.writeChar '+'
-    pop esi
-    text.write
+
+    _push ecx, esi
+    call fmt.hexDword
+    _write
+    _writeChar '+'
+
+    _pop ecx, esi
+    _write
 
     .next:
-    text.writeChar `\n`
+    _writeChar `\n`
     add ebp, 4
   cmp ebp, core.stack.$
   jb .while
+ret
 
-  ret
-
-diag.printMem: ; esi(mem) ecx(count) : : eax ecx(0) edx esi edi
+diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
   push ecx
   test esi, 0Fh
   jnz .printDword
 
   .printAddr:
-  mov eax, esi
   push esi
-  call fmt.hex
-  text.write
-  text.write ': '
+  mov eax, esi
+  call fmt.hexDword
+  _write
+  _write ': '
   pop esi
 
   .printDword:
   lodsd
   push esi
-  call fmt.hex
-  text.write
-  text.writeChar ' '
+  call fmt.hexDword
+  _write
+  _writeChar ' '
   pop esi
 
   test esi, 0Fh
@@ -149,6 +151,7 @@ diag.printMem: ; esi(mem) ecx(count) : : eax ecx(0) edx esi edi
   .printAscii:
   mov ecx, 10h
   sub esi, ecx
+
   .for:
     lodsb
     test al, 1110_0000b
@@ -157,18 +160,19 @@ diag.printMem: ; esi(mem) ecx(count) : : eax ecx(0) edx esi edi
 
     .nonPrintable:
     mov al, '.'
+
     .printable:
-    mpush esi, ecx
-    text.writeChar
-    mpop esi, ecx
+    _push ecx, esi
+    _writeChar
+    _pop ecx, esi
   loop .for
 
   push esi
-  text.writeChar `\n`
+  _writeChar `\n`
   pop esi
 
   .next:
   pop ecx
   dec ecx
   jnz diag.printMem
-  ret
+ret

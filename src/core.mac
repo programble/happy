@@ -1,26 +1,34 @@
+%ifndef _CORE_ASM
 extern core.panic
+%endif
 
-%macro panic 1
+%macro _panic 1
   [section .rodata]
-  %%panicMessage: db %1, `\n`, 0
+  %%panicMessage: db %1, `\n`
+  %%panicMessage.#: equ $ - %%panicMessage
+
   %ifndef _PANIC_FILE
-    %%panicFile: db ' ', __FILE__, ':', 0
+    %%panicFile: db __FILE__, ':'
+    %%panicFile.#: equ $ - %%panicFile
     %define _PANIC_FILE %%panicFile
+    %define _PANIC_FILE_LEN %%panicFile.#
   %endif
 
   __SECT__
   cli
   pushad
   pushfd
-  mov eax, $
-  mov ecx, __LINE__
-  mov edx, _PANIC_FILE
+  mov eax, __LINE__
+  mov ecx, %%panicMessage.#
+  mov edx, _PANIC_FILE_LEN
   mov esi, %%panicMessage
-  jmp core.panic
+  mov edi, _PANIC_FILE
+  call core.panic
+  nop
 %endmacro
 
-%macro panicc 2
+%macro _panicc 2
   j%-1 %%panicElse
-  panic %2
+  _panic %2
   %%panicElse:
 %endmacro

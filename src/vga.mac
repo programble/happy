@@ -2,8 +2,8 @@
 %define vga.WIDTH 160
 %define vga.HEIGHT 25
 
-%define vga.Color.FG 8
-%define vga.Color.BG 0Ch
+%define vga.Color.FG 0
+%define vga.Color.BG 4
 
 %define vga.Color.BLACK 0
 %define vga.Color.BLUE 1

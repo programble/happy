@@ -67,7 +67,7 @@ idt.init: ; : : eax edx
   _unhandled 14h, VE
 
   lidt [idt.idt]
-  ret
+ret
 
 idt.setGate: ; eax(vector) edx(handler) : : eax edx
   lea eax, [idt.table + eax * GateDescriptor_size]
@@ -77,24 +77,24 @@ idt.setGate: ; eax(vector) edx(handler) : : eax edx
   mov [eax + GateDescriptor.offsetHigh], dx
   mov [eax + GateDescriptor.segmentSelector], cs
   mov byte [eax + GateDescriptor.flags], Gate.INTERRUPT | Flags.D | Flags.DPL0 | Flags.P
-  ret
+ret
 
 idt.unhandled:
-  .DE: panic 'divide error'
-  .DB: panic 'debug exception'
-  .BP: panic 'breakpoint'
-  .OF: panic 'overflow'
-  .BR: panic 'BOUND range exceeded'
-  .UD: panic 'invalid opcode'
-  .NM: panic 'device not available'
-  .DF: panic 'double fault'
-  .TS: panic 'invalid TSS'
-  .NP: panic 'segment not present'
-  .SS: panic 'stack-segment fault'
-  .GP: panic 'general protection'
-  .PF: panic 'page fault'
-  .MF: panic 'x87 FPU floating-point error'
-  .AC: panic 'alignment check'
-  .MC: panic 'machine check'
-  .XM: panic 'SIMD floating-point exception'
-  .VE: panic 'virtualization exception'
+  .DE: _panic 'divide error'
+  .DB: _panic 'debug exception'
+  .BP: _panic 'breakpoint'
+  .OF: _panic 'overflow'
+  .BR: _panic 'BOUND range exceeded'
+  .UD: _panic 'invalid opcode'
+  .NM: _panic 'device not available'
+  .DF: _panic 'double fault'
+  .TS: _panic 'invalid TSS'
+  .NP: _panic 'segment not present'
+  .SS: _panic 'stack-segment fault'
+  .GP: _panic 'general protection'
+  .PF: _panic 'page fault'
+  .MF: _panic 'x87 FPU floating-point error'
+  .AC: _panic 'alignment check'
+  .MC: _panic 'machine check'
+  .XM: _panic 'SIMD floating-point exception'
+  .VE: _panic 'virtualization exception'

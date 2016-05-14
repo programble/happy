@@ -1,8 +1,8 @@
 global kbd.init, kbd.reset, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printBuffers
-extern idt.setGate, pic.unmask, core.halt, pic.eoiMaster, diag.printMem
+extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 %include "macro.mac"
-%include "text.mac"
+%include "write.mac"
 
 Port:
   .DATA: equ 60h
@@ -54,11 +54,11 @@ kbd.init: ; : : eax edx
   mov eax, 21h
   mov edx, kbd.interrupt
   call idt.setGate
-  mov eax, 0000_0000_0000_00010b
+  mov eax, 0000_0000_0000_0010b
   call pic.unmask
-  ret
+ret
 
-kbd.reset: ; : :
+kbd.reset: ; : : *
   in al, Port.COMMAND
   test al, Status.INPUT
   jnz kbd.reset
@@ -82,9 +82,9 @@ kbd.interrupt: ; : :
   .ret:
   call pic.eoiMaster
   popad
-  iret
+iret
 
-kbd.readCode: ; : al : eax
+kbd.readCode: ; : al(code) : eax
   mov eax, [kbd.bufRead]
   inc eax
   and eax, ~kbd.buffer.#
@@ -124,9 +124,9 @@ kbd.readCode: ; : al : eax
   .unsetModifier:
   not ah
   and [kbd.modifier], ah
-  ret
+ret
 
-kbd.readChar: ; : al : eax
+kbd.readChar: ; : al(char) : eax
   call kbd.readCode
   test al, al
   js kbd.readChar
@@ -150,31 +150,32 @@ kbd.readChar: ; : al : eax
   .ret:
   test al, al
   js kbd.readChar
-  ret
+ret
 
-kbd.readLine: ; : esi : eax ecx edx edi
+kbd.readLine: ; : ecx(lineLen) esi(line) : eax edx edi
+  xor ecx, ecx
   mov edi, kbd.line
   .while:
     call kbd.readChar
-    mpush eax, edi
-    text.writeChar
-    mpop eax, edi
+    _push eax, ecx, edi
+    _writeChar
+    _pop eax, ecx, edi
     cmp al, `\n`
     je .break
     stosb
+    inc ecx
   cmp edi, kbd.line.$ - 1
   jb .while
 
   .break:
-  mov byte [edi], 0
   mov esi, kbd.line
-  ret
+ret
 
-kbd.printBuffers: ; : : eax ecx(0) edx esi edi
+kbd.printBuffers: ; : : ax ecx(0) edx esi edi
   mov esi, kbd.buffer
   mov ecx, kbd.buffer.# / 4
   call diag.printMem
 
   mov esi, kbd.line
   mov ecx, (kbd.line.$ - kbd.line) / 4
-  jmp diag.printMem
+jmp diag.printMem

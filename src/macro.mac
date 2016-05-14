@@ -1,20 +1,23 @@
-%macro mpush 1-*
+%macro _push 1-*
   %rep %0
     push %1
-  %rotate 1
+    %rotate 1
   %endrep
 %endmacro
 
-%macro mpop 1-*
+%macro _pop 1-*
   %rep %0
-  %rotate -1
+    %rotate -1
     pop %1
   %endrep
 %endmacro
 
-%macro string 1
+%macro _string 1
   [section .rodata]
-  %%string: db %1, 0
+  %%string: db %1
+  %%string.#: equ $ - %%string
+
   __SECT__
   mov esi, %%string
+  mov ecx, %%string.#
 %endmacro

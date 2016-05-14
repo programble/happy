@@ -1,63 +1,186 @@
-global fmt.bin, fmt.dec, fmt.hex
+global fmt.binByte, fmt.binWord, fmt.binDword
+global fmt.hexByte, fmt.hexWord, fmt.hexDword
+global fmt.dec
 
 section .rodata
 fmt.hexDigits: db '0123456789ABCDEF'
 
 section .data
-fmt.output: db '00000000000000000000000000000000', 0
+fmt.string: db '00000000000000000000000000000000'
 .$:
 
 section .text
-fmt.bin: ; eax : esi : eax ecx(0) edi
-  mov esi, eax
-  mov ecx, 20h
-  mov edi, fmt.output.$ - 1
-  std
+fmt.binByte: ; al(byte) : ecx(fmtLen) esi(fmt) : al
+  mov esi, fmt.string.$
+  mov ecx, 8
   .for:
-    shr esi, 1
-    setc al
-    add al, '0'
-    stosb
+    dec esi
+    shr al, 1
+    setc [esi]
+    add byte [esi], '0'
   loop .for
-  cld
-  mov esi, edi
+  mov ecx, 8
+ret
+
+fmt.binWord: ; ax(word) : ecx(fmtLen) esi(fmt) : ax
+  mov esi, fmt.string.$
+  mov ecx, 10h
+  .for:
+    dec esi
+    shr ax, 1
+    setc [esi]
+    add byte [esi], '0'
+  loop .for
+  mov ecx, 10h
+ret
+
+fmt.binDword: ; eax(dword) : ecx(fmtLen) esi(fmt) : eax
+  mov esi, fmt.string.$
+  mov ecx, 20h
+  .for:
+    dec esi
+    shr eax, 1
+    setc [esi]
+    add byte [esi], '0'
+  loop .for
+  mov ecx, 20h
+ret
+
+fmt.hexByte: ; al(byte) : ecx(fmtLen) esi(fmt) :
+  movzx esi, al
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 1], cl
+
+  movzx esi, al
+  shr esi, 4
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov esi, fmt.string.$ - 2
+  mov [esi], cl
+
+  mov ecx, 2
+ret
+
+fmt.hexWord: ; ax(word) : ecx(fmtLen) esi(fmt) :
+  movzx esi, ax
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 1], cl
+
+  movzx esi, ax
+  shr esi, 4
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 2], cl
+
+  movzx esi, ax
+  shr esi, 8
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 3], cl
+
+  movzx esi, ax
+  shr esi, 0Ch
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov esi, fmt.string.$ - 4
+  mov [esi], cl
+
+  mov ecx, 4
+ret
+
+fmt.hexDword: ; eax(dword) : ecx(fmtLen) esi(fmt) :
+  mov esi, eax
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 1], cl
+
+  mov esi, eax
+  shr esi, 4
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 2], cl
+
+  mov esi, eax
+  shr esi, 8
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 3], cl
+
+  mov esi, eax
+  shr esi, 0Ch
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 4], cl
+
+  mov esi, eax
+  shr esi, 10h
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 5], cl
+
+  mov esi, eax
+  shr esi, 14h
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 6], cl
+
+  mov esi, eax
+  shr esi, 18h
+  and esi, 0Fh
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov [fmt.string.$ - 7], cl
+
+  mov esi, eax
+  shr esi, 1Ch
+  add esi, fmt.hexDigits
+  mov cl, [esi]
+  mov esi, fmt.string.$ - 8
+  mov [esi], cl
+
+  mov ecx, 8
+ret
+
+fmt.dec: ; eax(dword) : ecx(fmtLen) esi(fmt) : eax(0) edx(0)
+  test eax, eax
+  jnz .nonZero
+  mov esi, fmt.string.$ - 1
+  mov byte [esi], '0'
+  mov ecx, 1
   ret
 
-fmt.dec: ; eax : esi : eax(0) edx(0) ebx
-  test eax, eax
-  jz .zero
+  .nonZero:
+  mov ecx, 0Ah
+  mov esi, fmt.string.$
 
-  mov ebx, 0Ah
-  mov esi, fmt.output.$
-  .for:
+  .while:
     xor edx, edx
-    div ebx
+    div ecx
+
     test al, al
-    jnz .nz
+    jnz .else
     test dl, dl
     jz .break
-    .nz:
+    .else:
+
     add dl, '0'
     dec esi
     mov [esi], dl
-  jmp .for
-
-  .zero:
-  mov esi, fmt.output.$ - 1
-  mov byte [esi], '0'
+  jmp .while
 
   .break:
-  ret
-
-fmt.hex: ; eax : esi : eax(0) ecx(0) edx ebx
-  mov ebx, 10h
-  mov esi, fmt.output.$
-  mov ecx, 8
-  .for:
-    xor edx, edx
-    div ebx
-    mov edx, [fmt.hexDigits + edx]
-    dec esi
-    mov [esi], dl
-  loop .for
-  ret
+  mov ecx, fmt.string.$
+  sub ecx, esi
+ret

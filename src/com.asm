@@ -1,5 +1,7 @@
 global com.init, com.writeChar, com.write
 
+; TODO: Actually read the UART manual.
+
 Port.COM1:
   .DATA: equ 3F8h
   .FIFO: equ 3FAh
@@ -43,7 +45,6 @@ Modem:
   .LB: equ 0001_0000b
   .AF: equ 0010_0000b
 
-; TODO: Research all status flags.
 Status:
   .READY: equ 0010_0000b
 
@@ -60,7 +61,7 @@ com.init: ; : : al dx
   mov dx, Port.COM1.MODEM
   mov al, Modem.DTR | Modem.RTS
   out dx, al
-  ret
+ret
 
 com.writeChar: ; al(char) : : ah dx
   mov ah, al
@@ -74,24 +75,16 @@ com.writeChar: ; al(char) : : ah dx
   mov dx, Port.COM1.DATA
   mov al, ah
   out dx, al
-
-  ret
+ret
 
 ; TODO: Avoid overflowing the buffer?
-com.write: ; esi(string) : : al(0) dx esi
+com.write: ; ecx(strLen) esi(str) : : al ecx(0) dx esi
   mov dx, Port.COM1.STATUS
-  .readyWhile:
+  .while:
     in al, dx
   test al, Status.READY
-  jz .readyWhile
+  jz .while
 
   mov dx, Port.COM1.DATA
-  .stringWhile:
-    lodsb
-    test al, al
-    jz .break
-    out dx, al
-  jmp .stringWhile
-
-  .break:
-  ret
+  rep outsb
+ret

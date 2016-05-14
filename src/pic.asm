@@ -45,10 +45,9 @@ pic.init: ; : : al
   mov al, 1111_1111b
   out Port.MASTER.DATA, al
   out Port.SLAVE.DATA, al
+ret
 
-  ret
-
-pic.mask: ; ax : : dx
+pic.mask: ; ax(mask) : : dx
   mov dx, ax
   in al, Port.SLAVE.DATA
   mov ah, al
@@ -57,9 +56,9 @@ pic.mask: ; ax : : dx
   out Port.MASTER.DATA, al
   mov al, ah
   out Port.SLAVE.DATA, al
-  ret
+ret
 
-pic.unmask: ; ax : : dx
+pic.unmask: ; ax(mask) : : dx
   mov dx, ax
   not dx
   in al, Port.SLAVE.DATA
@@ -69,15 +68,15 @@ pic.unmask: ; ax : : dx
   out Port.MASTER.DATA, al
   mov al, ah
   out Port.SLAVE.DATA, al
-  ret
+ret
 
 pic.eoiMaster: ; : : al
   mov al, 20h
   out Port.MASTER.COMMAND, al
-  ret
+ret
 
 pic.eoiSlave: ; : : al
   mov al, 20h
   out Port.MASTER.COMMAND, al
   out Port.SLAVE.COMMAND, al
-  ret
+ret
