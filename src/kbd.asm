@@ -175,6 +175,7 @@ kbd.printBuffers: ; : : ax ecx(0) edx esi edi
   mov esi, kbd.buffer
   mov ecx, kbd.buffer.# / 4
   call diag.printMem
+  _writeChar `\n`
 
   mov esi, kbd.line
   mov ecx, (kbd.line.$ - kbd.line) / 4
