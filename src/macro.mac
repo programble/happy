@@ -12,12 +12,16 @@
   %endrep
 %endmacro
 
-%macro _string 1
+%macro _string 3
   [section .rodata]
-  %%string: db %1
+  %%string: db %3
   %%string.#: equ $ - %%string
 
   __SECT__
-  mov esi, %%string
-  mov ecx, %%string.#
+  mov %1, %%string.#
+  mov %2, %%string
+%endmacro
+
+%macro _string 1
+  _string ecx, esi, %1
 %endmacro
