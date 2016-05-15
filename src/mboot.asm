@@ -62,13 +62,13 @@ mboot.init: ; eax(magic) ebx(info) : : eax ecx edx(0) ebx
   mov [mboot.info], ebx
 
   test dword [ebx + Info.flags], Flags.SHDR
-  jz .ret
+  jnz .elf
+  ret
+
+  .elf:
   mov ecx, [ebx + Info.shdrNum]
   mov ebx, [ebx + Info.shdrAddr]
-  call elf.init
-
-  .ret:
-ret
+jmp elf.init
 
 mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, [mboot.info]
