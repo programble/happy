@@ -17,7 +17,7 @@ vga.init: ; : : eax ecx(0) dx edi
   mov al, 0Ah
   out dx, al
   inc dx
-  mov al, 10h
+  mov al, 0FFh
   out dx, al
 jmp vga.blank
 
@@ -47,6 +47,11 @@ vga.writeChar: ; al(char) : : ax ecx(0) edx esi edi
 ret
 
 vga.write: ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
+  test ecx, ecx
+  jnz .clearCursor
+  ret
+
+  .clearCursor:
   mov edi, [vga.pointer]
   mov ah, [vga.attribute]
   mov [edi + 1], ah
