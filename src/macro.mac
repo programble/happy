@@ -12,6 +12,17 @@
   %endrep
 %endmacro
 
+%macro _out 2 ; : : al dx
+  mov dx, %1
+  mov al, %2
+  out dx, al
+%endmacro
+
+%macro _in 1 ; : al(byte) : dx
+  mov dx, %1
+  in al, dx
+%endmacro
+
 %macro _string 3+
   [section .rodata]
   %%string: db %3

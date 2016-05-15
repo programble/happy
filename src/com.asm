@@ -1,4 +1,5 @@
 global com.init, com.writeChar, com.write
+%include "macro.mac"
 
 ; TODO: Actually read the UART manual.
 
@@ -50,17 +51,9 @@ Status:
 
 section .text
 com.init: ; : : al dx
-  mov dx, Port.COM1.LINE
-  mov al, Line.DL3
-  out dx, al
-
-  mov dx, Port.COM1.FIFO
-  mov al, Fifo.E | Fifo.CLT | Fifo.BS | Fifo.LVL3
-  out dx, al
-
-  mov dx, Port.COM1.MODEM
-  mov al, Modem.DTR | Modem.RTS
-  out dx, al
+  _out Port.COM1.LINE, Line.DL3
+  _out Port.COM1.FIFO, Fifo.E | Fifo.CLT | Fifo.BS | Fifo.LVL3
+  _out Port.COM1.MODEM, Modem.DTR | Modem.RTS
 ret
 
 com.writeChar: ; al(char) : : ah dx
@@ -72,9 +65,7 @@ com.writeChar: ; al(char) : : ah dx
   test al, Status.READY
   jz .while
 
-  mov dx, Port.COM1.DATA
-  mov al, ah
-  out dx, al
+  _out Port.COM1.DATA, ah
 ret
 
 ; TODO: Avoid overflowing the buffer?

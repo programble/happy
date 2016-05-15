@@ -13,12 +13,8 @@ vga.attribute: db vga.Color.GRAY << vga.Color.FG
 
 section .text
 vga.init: ; : : eax ecx(0) dx edi
-  mov dx, 3D4h
-  mov al, 0Ah
-  out dx, al
-  inc dx
-  mov al, 0FFh
-  out dx, al
+  _out 3D4h, 0Ah
+  _out 3D5h, 0FFh
 jmp vga.blank
 
 vga.blank: ; : : eax ecx(0) edi
