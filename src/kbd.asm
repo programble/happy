@@ -2,6 +2,7 @@ global kbd.init, kbd.reset, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printB
 extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 %include "macro.mac"
+%include "core.mac"
 %include "write.mac"
 
 Port:
@@ -24,6 +25,7 @@ ScanCode:
   .SHIFT_RIGHT: equ 36h
   .CTRL_LEFT: equ 1Dh
   .ALT_LEFT: equ 38h
+  .F1: equ 3Bh
 
 Modifier:
   .SHIFT_LEFT: equ 0000_0001b
@@ -70,6 +72,8 @@ kbd.interrupt: ; : :
   pushad
 
   in al, Port.DATA
+  cmp al, ScanCode.F1
+  _panicc e, 'manual panic'
 
   mov edi, [kbd.bufWrite]
   cmp edi, [kbd.bufRead]
