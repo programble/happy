@@ -12,7 +12,7 @@
   %endrep
 %endmacro
 
-%macro _string 3
+%macro _string 3+
   [section .rodata]
   %%string: db %3
   %%string.#: equ $ - %%string

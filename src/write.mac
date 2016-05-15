@@ -6,9 +6,12 @@ extern vga.writeChar, vga.write
   call vga.writeChar
 %endmacro
 
-%macro _writeChar 1 ; : : ax ecx(0) edx esi edi
-  mov al, %1
-  _writeChar
+%macro _writeChar 1-* ; : : ax ecx(0) edx esi edi
+  %rep %0
+    mov al, %1
+    _writeChar
+    %rotate 1
+  %endrep
 %endmacro
 
 %macro _write 0 ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
@@ -18,7 +21,7 @@ extern vga.writeChar, vga.write
   call vga.write
 %endmacro
 
-%macro _write 1 ; : : ax ecx(0) edx esi edi
-  _string %1
+%macro _write 1+ ; : : ax ecx(0) edx esi edi
+  _string ecx, esi, %1
   _write
 %endmacro
