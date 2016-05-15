@@ -66,7 +66,7 @@ kbd.reset: ; : : *
   jnz kbd.reset
   mov al, Command.RESET
   out Port.COMMAND, al
-  jmp core.halt
+jmp core.halt
 
 kbd.interrupt: ; : :
   pushad
