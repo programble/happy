@@ -99,7 +99,8 @@ ret
 elf.symbolString: ; eax(value) : ecx(nameLen) esi(name) :
   xor ecx, ecx
   cmp dword [elf.symtab], 0
-  je .ret
+  jne .skipCheck
+  ret
   .skipCheck:
 
   mov esi, [elf.symtab]
@@ -109,14 +110,12 @@ elf.symbolString: ; eax(value) : ecx(nameLen) esi(name) :
     add esi, Sym_size
   cmp esi, [elf.symtab.$]
   jb .while
+  ret
 
   .break:
   mov esi, [esi + Sym.name]
   add esi, [elf.strtab]
-  call str.fromCStr
-
-  .ret:
-ret
+jmp str.fromCStr
 
 elf.symbolStringOffset: ; eax(value) : eax(offset) ecx(nameLen) esi(name) : edx
   xor ecx, ecx
