@@ -1,4 +1,4 @@
-global diag.printEflags, diag.printRegs, diag.printStack, diag.printMem
+global diag.printEflags, diag.printRegs, diag.printSymbol, diag.printStack, diag.printMem
 extern fmt.hexDword, elf.symbolStringOffset
 extern core.boundLower, core.boundUpper, core.stack.$
 %include "macro.mac"
@@ -67,7 +67,7 @@ diag.printEflags: ; eax(pushfd) : : ax ecx(0) edx esi edi
   add esp, 4
 ret
 
-diag.printRegs: ; ebx(pushad) : : ax ecx(0) edx esi edi
+diag.printRegs: ; ebx(pushad) : : eax ecx(0) edx esi edi
   %macro _reg 2
     _write %1
     mov eax, [ebx + Pushad.%2]
@@ -85,7 +85,34 @@ diag.printRegs: ; ebx(pushad) : : ax ecx(0) edx esi edi
   _reg ' edi ', edi
 ret
 
-diag.printStack: ; esp(stack) : : ax ecx(0) edx esi edi
+diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
+  push eax
+  call fmt.hexDword
+  _write
+  _writeChar ' '
+
+  pop eax
+  cmp eax, core.boundLower
+  jb .ret
+  cmp eax, core.boundUpper
+  ja .ret
+
+  call elf.symbolStringOffset
+  test ecx, ecx
+  jz .ret
+
+  _push ecx, esi
+  call fmt.hexDword
+  _write
+  _writeChar '+'
+
+  _pop ecx, esi
+  _write
+
+  .ret:
+ret
+
+diag.printStack: ; esp(stack) : : eax ecx(0) edx esi edi
   mov ebp, esp
 
   .while:
@@ -95,29 +122,8 @@ diag.printStack: ; esp(stack) : : ax ecx(0) edx esi edi
     _writeChar ' '
 
     mov eax, [ebp]
-    call fmt.hexDword
-    _write
-    _writeChar ' '
+    call diag.printSymbol
 
-    mov eax, [ebp]
-    cmp eax, core.boundLower
-    jb .next
-    cmp eax, core.boundUpper
-    ja .next
-
-    call elf.symbolStringOffset
-    test ecx, ecx
-    jz .next
-
-    _push ecx, esi
-    call fmt.hexDword
-    _write
-    _writeChar '+'
-
-    _pop ecx, esi
-    _write
-
-    .next:
     _writeChar `\n`
     add ebp, 4
   cmp ebp, core.stack.$
