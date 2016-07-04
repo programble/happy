@@ -1,6 +1,6 @@
 global main.main
 extern vga.attribute, kbd.readLine, str.equal?
-extern vga.blank, core.halt, kbd.reset
+extern vga.blank, core.halt, kbd.reset, fmt.fmt
 extern diag.printEflags, diag.printRegs, diag.printStack
 extern mboot.printInfo, mboot.printMmap
 extern kbd.printBuffers
@@ -11,7 +11,10 @@ extern kbd.printBuffers
 
 section .text
 main.main: ; : : *
-  _write `You'll never be happy.\n`
+  push 0DEADBEEFh
+  _string `You'll never be %hd0.\n`
+  call fmt.fmt
+  _write
 
   %macro _cmdStart 0
     [section .rodata]
