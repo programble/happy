@@ -2,6 +2,7 @@ global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
 extern mboot.init, com.init, vga.init, gdt.init, idt.init, pic.init, kbd.init
 extern main.main, fmt.dec, diag.printEflags, diag.printRegs, diag.printStack
+extern kbd.poll, kbd.reset
 extern vga.attribute
 %define _CORE_ASM
 %include "macro.mac"
@@ -77,4 +78,7 @@ core.panic: ; eax(line) ecx(msgLen) edx(fileLen) esi(msg) edi(file) [esp+8](push
   add esp, 24h
   push eax
   call diag.printStack
-jmp core.halt
+
+  call kbd.poll
+  call kbd.poll
+jmp kbd.reset

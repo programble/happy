@@ -1,4 +1,6 @@
-global kbd.init, kbd.reset, kbd.readCode, kbd.readChar, kbd.readLine, kbd.printBuffers
+global kbd.init, kbd.poll, kbd.reset
+global kbd.readCode, kbd.readChar, kbd.readLine
+global kbd.printBuffers
 extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
 %include "macro.mac"
@@ -58,6 +60,15 @@ kbd.init: ; : : eax edx
   call idt.setGate
   mov eax, 0000_0000_0000_0010b
   call pic.unmask
+ret
+
+kbd.poll: ; al : : ax
+  in al, Port.DATA
+  mov ah, al
+  .loop:
+    in al, Port.DATA
+  cmp al, ah
+  je .loop
 ret
 
 kbd.reset: ; : : *
