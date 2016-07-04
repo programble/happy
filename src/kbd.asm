@@ -62,7 +62,7 @@ kbd.init: ; : : eax edx
   call pic.unmask
 ret
 
-kbd.poll: ; al : : ax
+kbd.poll: ; : al : ax
   in al, Port.DATA
   mov ah, al
   .loop:
