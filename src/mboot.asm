@@ -2,6 +2,7 @@ global mboot.init, mboot.printInfo, mboot.printMmap
 extern elf.init, fmt.binDword, fmt.hexDword, str.fromCStr
 %include "macro.mac"
 %include "core.mac"
+%include "fmt.mac"
 %include "write.mac"
 
 Flags:
@@ -173,28 +174,14 @@ mboot.printMmap: ; : : eax ecx(0) edx ebx ebp esi edi
   push eax
   mov ebp, [ebp + Info.mmapAddr]
 
+  _write `baseAddr\t\tlength\t\t\ttype\n`
   .while:
-    mov eax, [ebp + Mmap.baseAddr + 4]
-    call fmt.hexDword
-    _write
-    mov eax, [ebp + Mmap.baseAddr]
-    call fmt.hexDword
-    _write
-    _writeChar ' '
-
-    mov eax, [ebp + Mmap.length + 4]
-    call fmt.hexDword
-    _write
-    mov eax, [ebp + Mmap.length]
-    call fmt.hexDword
-    _write
-    _writeChar ' '
-
-    mov eax, [ebp + Mmap.type]
-    call fmt.hexDword
-    _write
-    _writeChar `\n`
-
+    _write `%hd0%hd1\t%hd2%hd3\t%hd4\n`, \
+      dword [ebp + Mmap.baseAddr + 4], \
+      dword [ebp + Mmap.baseAddr], \
+      dword [ebp + Mmap.length + 4], \
+      dword [ebp + Mmap.length], \
+      dword [ebp + Mmap.type]
     add ebp, [ebp + Mmap.size]
     add ebp, 4
   cmp ebp, [esp]
