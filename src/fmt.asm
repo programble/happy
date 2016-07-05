@@ -8,169 +8,129 @@ global fmt.fmt
 section .rodata
 fmt.hexDigits: db '0123456789ABCDEF'
 
-section .data
-fmt.intString: db '00000000000000000000000000000000'
+section .bss
+fmt.intStr: resb 20h
+.$:
+fmt.fmtStr: resb 100h
 .$:
 
-section .bss
-fmt.string: resb 100h
-.$:
+%macro _bin 2
+  mov esi, fmt.intStr.$
+  mov ecx, %2
+  .for:
+    dec esi
+    shr %1, 1
+    setc [esi]
+    add byte [esi], '0'
+  loop .for
+  mov ecx, %2
+%endmacro
 
 section .text
-fmt.binByte: ; al(byte) : ecx(fmtLen) esi(fmt) : al
-  mov esi, fmt.intString.$
-  mov ecx, 8
-  .for:
-    dec esi
-    shr al, 1
-    setc [esi]
-    add byte [esi], '0'
-  loop .for
-  mov ecx, 8
+fmt.binByte: ; al : ecx(strLen) esi(str) : al
+  _bin al, 8
 ret
 
-fmt.binWord: ; ax(word) : ecx(fmtLen) esi(fmt) : ax
-  mov esi, fmt.intString.$
-  mov ecx, 10h
-  .for:
-    dec esi
-    shr ax, 1
-    setc [esi]
-    add byte [esi], '0'
-  loop .for
-  mov ecx, 10h
+fmt.binWord: ; ax : ecx(strLen) esi(str) : ax
+  _bin ax, 10h
 ret
 
-fmt.binDword: ; eax(dword) : ecx(fmtLen) esi(fmt) : eax
-  mov esi, fmt.intString.$
-  mov ecx, 20h
-  .for:
-    dec esi
-    shr eax, 1
-    setc [esi]
-    add byte [esi], '0'
-  loop .for
-  mov ecx, 20h
+fmt.binDword: ; eax : ecx(strLen) esi(str) : eax
+  _bin eax, 20h
 ret
 
-fmt.hexByte: ; al(byte) : ecx(fmtLen) esi(fmt) :
+fmt.hexByte: ; al : ecx(strLen) esi(str) :
   movzx esi, al
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 1], cl
+  mov ch, [fmt.hexDigits + esi]
 
   movzx esi, al
   shr esi, 4
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov esi, fmt.intString.$ - 2
-  mov [esi], cl
+  mov cl, [fmt.hexDigits + esi]
 
+  mov esi, fmt.intStr.$ - 2
+  mov [esi], cx
   mov ecx, 2
 ret
 
-fmt.hexWord: ; ax(word) : ecx(fmtLen) esi(fmt) :
-  movzx esi, ax
+fmt.hexWord: ; ax : ecx(strLen) esi(str) :
+  movzx esi, al
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 1], cl
+  mov ch, [fmt.hexDigits + esi]
 
-  movzx esi, ax
+  movzx esi, al
   shr esi, 4
+  mov cl, [fmt.hexDigits + esi]
+  mov [fmt.intStr.$ - 2], cx
+
+  movzx esi, ah
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 2], cl
+  mov ch, [fmt.hexDigits + esi]
 
-  movzx esi, ax
-  shr esi, 8
-  and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 3], cl
+  movzx esi, ah
+  shr esi, 4
+  mov cl, [fmt.hexDigits + esi]
 
-  movzx esi, ax
-  shr esi, 0Ch
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov esi, fmt.intString.$ - 4
-  mov [esi], cl
-
+  mov esi, fmt.intStr.$ - 4
+  mov [esi], cx
   mov ecx, 4
 ret
 
-fmt.hexDword: ; eax(dword) : ecx(fmtLen) esi(fmt) :
-  mov esi, eax
+fmt.hexDword: ; eax : ecx(strLen) esi(str) :
+  movzx esi, al
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 1], cl
+  mov ch, [fmt.hexDigits + esi]
 
-  mov esi, eax
+  movzx esi, al
   shr esi, 4
-  and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 2], cl
+  mov cl, [fmt.hexDigits + esi]
+  mov [fmt.intStr.$ - 2], cx
 
-  mov esi, eax
-  shr esi, 8
+  movzx esi, ah
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 3], cl
+  mov ch, [fmt.hexDigits + esi]
 
-  mov esi, eax
-  shr esi, 0Ch
-  and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 4], cl
+  movzx esi, ah
+  shr esi, 4
+  mov cl, [fmt.hexDigits + esi]
+  mov [fmt.intStr.$ - 4], cx
 
   mov esi, eax
   shr esi, 10h
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 5], cl
+  mov ch, [fmt.hexDigits + esi]
 
   mov esi, eax
   shr esi, 14h
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 6], cl
+  mov cl, [fmt.hexDigits + esi]
+  mov [fmt.intStr.$ - 6], cx
 
   mov esi, eax
   shr esi, 18h
   and esi, 0Fh
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov [fmt.intString.$ - 7], cl
+  mov ch, [fmt.hexDigits + esi]
 
   mov esi, eax
   shr esi, 1Ch
-  add esi, fmt.hexDigits
-  mov cl, [esi]
-  mov esi, fmt.intString.$ - 8
-  mov [esi], cl
+  mov cl, [fmt.hexDigits + esi]
 
+  mov esi, fmt.intStr.$ - 8
+  mov [esi], cx
   mov ecx, 8
 ret
 
-fmt.dec: ; eax(dword) : ecx(fmtLen) esi(fmt) : eax(0) edx(0)
+fmt.dec: ; eax : ecx(strLen) esi(str) : eax(0) edx(0)
   test eax, eax
-  jnz .nonZero
-  mov esi, fmt.intString.$ - 1
-  mov byte [esi], '0'
+  jnz .nz
   mov ecx, 1
+  mov esi, fmt.intStr.$ - 1
+  mov byte [esi], '0'
   ret
 
-  .nonZero:
+  .nz:
   mov ecx, 0Ah
-  mov esi, fmt.intString.$
+  mov esi, fmt.intStr.$
 
   .while:
     xor edx, edx
@@ -180,78 +140,76 @@ fmt.dec: ; eax(dword) : ecx(fmtLen) esi(fmt) : eax(0) edx(0)
     jnz .else
     test dl, dl
     jz .break
-    .else:
 
+    .else:
     add dl, '0'
     dec esi
     mov [esi], dl
   jmp .while
 
   .break:
-  mov ecx, fmt.intString.$
+  mov ecx, fmt.intStr.$
   sub ecx, esi
 ret
 
-fmt.fmt: ; ecx(strLen) esi(str) [esp+4...] : ecx(fmtLen) esi(fmt) : edi eax edx
-  mov edi, fmt.string
+fmt.fmt: ; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
+  mov edi, fmt.fmtStr
 
   .for:
     lodsb
     cmp al, '%'
-    je .parse
+    je .spec
 
+    .stosb:
     stosb
-    jmp .next
+    loop .for
+    jmp .break
 
-    .parse:
+    .spec:
+    dec ecx
     lodsb
     cmp al, '%'
-    je .escape
+    je .stosb
 
-    mov ah, al
+    cmp ecx, 3
+    _panicc b, 'incomplete format specifier'
+
+    mov dl, al
     lodsb
-    mov dx, ax
+    mov dh, al
 
     xor eax, eax
     lodsb
     sub al, '0'
     mov eax, [esp + eax * 4 + 4]
 
-    %macro _case 3
-      cmp dx, %1 << 8 | %2
+    %macro _case 2
+      cmp dx, %1
       jne %%fmtCaseElse
-      jmp %3
+      jmp %2
       %%fmtCaseElse:
     %endmacro
 
-    _push ecx, esi
-    push .copy
-    _case 'b', 'b', fmt.binByte
-    _case 'b', 'w', fmt.binWord
-    _case 'b', 'd', fmt.binDword
-    _case 'd', 'b', fmt.dec
-    _case 'd', 'w', fmt.dec
-    _case 'd', 'd', fmt.dec
-    _case 'h', 'b', fmt.hexByte
-    _case 'h', 'w', fmt.hexWord
-    _case 'h', 'd', fmt.hexDword
-    _panic 'invalid format string'
-
-    .escape:
-    stosb
-    dec ecx
-    jmp .next
+    _push ecx, esi, .copy
+    _case 'bb', fmt.binByte
+    _case 'bw', fmt.binWord
+    _case 'bd', fmt.binDword
+    _case 'hb', fmt.hexByte
+    _case 'hw', fmt.hexWord
+    _case 'hd', fmt.hexDword
+    _case 'db', fmt.dec
+    _case 'dw', fmt.dec
+    _case 'dd', fmt.dec
+    _panic 'invalid format specifier'
 
     .copy:
     rep movsb
     _pop ecx, esi
-    sub ecx, 3
-
-    .next:
-  dec ecx
+  sub ecx, 3
   jnz .for
 
+  .break:
   mov ecx, edi
-  sub ecx, fmt.string
-  mov esi, fmt.string
+  mov esi, fmt.fmtStr
+  sub ecx, esi
 ret
