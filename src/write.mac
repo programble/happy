@@ -21,7 +21,12 @@ extern vga.writeChar, vga.write
   call vga.write
 %endmacro
 
-%macro _write 1+ ; : : ax ecx(0) edx esi edi
-  _string ecx, esi, %1
+%macro _write 1 ; : : ax ecx(0) edx esi edi
+  _string %1
+  _write
+%endmacro
+
+%macro _write 2+ ; : : eax ecx(0) edx esi edi
+  _fmt %1, %2
   _write
 %endmacro

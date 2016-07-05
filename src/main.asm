@@ -7,14 +7,12 @@ extern kbd.printBuffers
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
+%include "fmt.mac"
 %include "write.mac"
 
 section .text
 main.main: ; : : *
-  push 0DEADBEEFh
-  _string `You'll never be %hd0.\n`
-  call fmt.fmt
-  _write
+  _write `You'll never be %hd0.\n`, 0DEADBEEFh
 
   %macro _cmdStart 0
     [section .rodata]
