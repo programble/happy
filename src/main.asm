@@ -1,6 +1,6 @@
 global main.main
 extern vga.attribute, kbd.readLine, str.equal?
-extern vga.blank, core.halt, kbd.reset, fmt.fmt
+extern vga.blank, core.halt, kbd.reset
 extern diag.printEflags, diag.printRegs, diag.printStack
 extern mboot.printInfo, mboot.printMmap
 extern kbd.printBuffers
