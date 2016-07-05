@@ -222,7 +222,7 @@ fmt.printBuffers: ; : : ax ecx(0) edx esi edi
   mov ecx, (fmt.intStr.$ - fmt.intStr) / 4
   call diag.printMem
   _writeChar `\n`
-  
+
   mov esi, fmt.fmtStr
   mov ecx, (fmt.fmtStr.$ - fmt.fmtStr) / 4
 jmp diag.printMem
