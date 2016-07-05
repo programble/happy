@@ -4,4 +4,5 @@ extern fmt.fmt
   _push %2
   _string %1
   call fmt.fmt
+  add esp, (%0 - 1) * 4
 %endmacro
