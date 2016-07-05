@@ -1,14 +1,7 @@
 extern fmt.fmt
 
-%macro _fmtPush 1-*
-  %rep %0
-    %rotate -1
-    push %1
-  %endrep
-%endmacro
-
-%macro _fmt 2+ ; : ecx(strLen) esi(str) : eax edx edi
-  _fmtPush %2
+%macro _fmt 2-* ; : ecx(strLen) esi(str) : eax edx edi
+  _push %{-1:2}
   _string %1
   call fmt.fmt
   add esp, (%0 - 1) * 4
