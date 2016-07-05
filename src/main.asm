@@ -3,7 +3,7 @@ extern vga.attribute, kbd.readLine, str.equal?
 extern vga.blank, core.halt, kbd.reset
 extern diag.printEflags, diag.printRegs, diag.printStack
 extern mboot.printInfo, mboot.printMmap
-extern kbd.printBuffers
+extern fmt.printBuffers, kbd.printBuffers
 %include "macro.mac"
 %include "core.mac"
 %include "vga.mac"
@@ -64,6 +64,7 @@ main.main: ; : : *
       _cmd 'mboot', mboot.printInfo
       _cmd 'mmap', mboot.printMmap
 
+      _cmd 'fmt', fmt.printBuffers
       _cmd 'kbd', kbd.printBuffers
     _cmdEnd
 

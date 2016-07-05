@@ -2,8 +2,11 @@ global fmt.binByte, fmt.binWord, fmt.binDword
 global fmt.hexByte, fmt.hexWord, fmt.hexDword
 global fmt.dec
 global fmt.fmt
+global fmt.printBuffers
+extern diag.printMem
 %include "macro.mac"
 %include "core.mac"
+%include "write.mac"
 
 section .rodata
 fmt.hexDigits: db '0123456789ABCDEF'
@@ -213,3 +216,13 @@ fmt.fmt: ; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
   mov esi, fmt.fmtStr
   sub ecx, esi
 ret
+
+fmt.printBuffers: ; : : ax ecx(0) edx esi edi
+  mov esi, fmt.intStr
+  mov ecx, (fmt.intStr.$ - fmt.intStr) / 4
+  call diag.printMem
+  _writeChar `\n`
+  
+  mov esi, fmt.fmtStr
+  mov ecx, (fmt.fmtStr.$ - fmt.fmtStr) / 4
+jmp diag.printMem
