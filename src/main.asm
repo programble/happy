@@ -12,7 +12,7 @@ extern kbd.printBuffers
 
 section .text
 main.main: ; : : *
-  _write `You'll never be %hd0.\n`, 0DEADBEEFh
+  _write `You'll never be %hd0 %hd1.\n`, 0DEADBEEFh, 0CAFEBABEh
 
   %macro _cmdStart 0
     [section .rodata]
