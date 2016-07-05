@@ -91,7 +91,9 @@ kbd.interrupt: ; : :
   je .ret
 
   stosb
-  and edi, ~kbd.buffer.#
+  sub edi, kbd.buffer
+  and edi, kbd.buffer.# - 1
+  add edi, kbd.buffer
   mov [kbd.bufWrite], edi
 
   .ret:
@@ -101,8 +103,9 @@ iret
 
 kbd.readCode: ; : al(code) : eax
   mov eax, [kbd.bufRead]
-  inc eax
-  and eax, ~kbd.buffer.#
+  sub eax, kbd.buffer - 1
+  and eax, kbd.buffer.# - 1
+  add eax, kbd.buffer
 
   .waitWhile:
     cmp eax, [kbd.bufWrite]
