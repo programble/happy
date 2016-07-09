@@ -1,5 +1,8 @@
 global elf.init, elf.symbolString, elf.symbolStringOffset, elf.stringSymbol
+global elf.printGlobals
 extern str.fromCStr, str.equal?
+%include "macro.mac"
+%include "write.mac"
 
 ShType:
   .NULL: equ 0
@@ -170,6 +173,31 @@ elf.stringSymbol: ; ecx(strLen) esi(str) : eax(value) : ecx ebx edx esi edi
 
   .break:
   mov eax, [ebx + Sym.value]
+
+  .ret:
+ret
+
+elf.printGlobals: ; : : ax ecx(0) edx ebx esi edi
+  mov ebx, [elf.symtab]
+  test ebx, ebx
+  jz .ret
+
+  .while:
+    mov al, [ebx + Sym.info]
+    shr al, 4
+    cmp al, SymBind.GLOBAL
+    jne .next
+
+    mov esi, [ebx + Sym.name]
+    add esi, [elf.strtab]
+    call str.fromCStr
+    _write
+    _writeChar ' '
+
+    .next:
+    add ebx, Sym_size
+  cmp ebx, [elf.symtab.$]
+  jb .while
 
   .ret:
 ret
