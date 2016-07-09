@@ -1,5 +1,5 @@
-global elf.init, elf.symbolString, elf.symbolStringOffset
-extern str.fromCStr
+global elf.init, elf.symbolString, elf.symbolStringOffset, elf.stringSymbol
+extern str.fromCStr, str.equal?
 
 ShType:
   .NULL: equ 0
@@ -134,6 +134,42 @@ elf.symbolStringOffset: ; eax(value) : eax(offset) ecx(nameLen) esi(name) : edx
 
   .break:
   mov eax, edx
+
+  .ret:
+ret
+
+elf.stringSymbol: ; ecx(strLen) esi(str) : eax(value) : ecx ebx edx esi edi
+  xor eax, eax
+  mov ebx, [elf.symtab]
+  test ebx, ebx
+  jz .ret
+
+  mov edx, ecx
+  mov edi, esi
+
+  .while:
+    mov si, [ebx + Sym.info]
+    shr si, 4
+    and si, 0Fh
+    cmp si, SymBind.GLOBAL
+    jne .next
+
+    mov esi, [ebx + Sym.name]
+    add esi, [elf.strtab]
+    call str.fromCStr
+    push edi
+    call str.equal?
+    pop edi
+    je .break
+
+    .next:
+    add ebx, Sym_size
+  cmp ebx, [elf.symtab.$]
+  jb .while
+  ret
+
+  .break:
+  mov eax, [ebx + Sym.value]
 
   .ret:
 ret
