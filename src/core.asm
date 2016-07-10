@@ -15,6 +15,7 @@ extern vga.attribute
 
 section .bss
 
+;;; The stack.
 core.stack: resb 1000h
   .$:
 

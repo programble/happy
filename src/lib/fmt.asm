@@ -1,20 +1,32 @@
+;;; Number and string formatting.
+
 global fmt.binByte, fmt.binWord, fmt.binDword
 global fmt.hexByte, fmt.hexWord, fmt.hexDword
 global fmt.dec
 global fmt.fmt
 global fmt.printBuffers
+
 extern diag.printMem
+
 %include "core.mac"
 %include "write.mac"
 
 section .rodata
+
+;;; Hexadecimal digits.
 fmt.hexDigits: db '0123456789ABCDEF'
 
 section .bss
+
+;;; Buffer for number formatting.
 fmt.intStr: resb 20h
-.$:
+  .$:
+
+;;; Buffer for string formatting.
 fmt.fmtStr: resb 100h
-.$:
+  .$:
+
+section .text
 
 %macro _bin 2
   mov esi, fmt.intStr.$
@@ -28,20 +40,27 @@ fmt.fmtStr: resb 100h
   mov ecx, %2
 %endmacro
 
-section .text
-fmt.binByte: ; al : ecx(strLen) esi(str) : al
+;;; Format a byte in binary.
+;;; al : ecx(strLen) esi(str) : al(0)
+fmt.binByte:
   _bin al, 8
 ret
 
-fmt.binWord: ; ax : ecx(strLen) esi(str) : ax
+;;; Format a word in binary.
+;;; ax : ecx(strLen) esi(str) : ax(0)
+fmt.binWord:
   _bin ax, 10h
 ret
 
-fmt.binDword: ; eax : ecx(strLen) esi(str) : eax
+;;; Format a double-word in binary.
+;;; eax : ecx(strLen) esi(str) : eax(0)
+fmt.binDword:
   _bin eax, 20h
 ret
 
-fmt.hexByte: ; al : ecx(strLen) esi(str) :
+;;; Format a byte in hexadecimal.
+;;; al : ecx(strLen) esi(str) :
+fmt.hexByte:
   movzx esi, al
   and esi, 0Fh
   mov ch, [fmt.hexDigits + esi]
@@ -55,7 +74,9 @@ fmt.hexByte: ; al : ecx(strLen) esi(str) :
   mov ecx, 2
 ret
 
-fmt.hexWord: ; ax : ecx(strLen) esi(str) :
+;;; Format a word in hexadecimal.
+;;; ax : ecx(strLen) esi(str) :
+fmt.hexWord:
   movzx esi, al
   and esi, 0Fh
   mov ch, [fmt.hexDigits + esi]
@@ -78,7 +99,9 @@ fmt.hexWord: ; ax : ecx(strLen) esi(str) :
   mov ecx, 4
 ret
 
-fmt.hexDword: ; eax : ecx(strLen) esi(str) :
+;;; Format a double-word in hexadecimal.
+;;; eax : ecx(strLen) esi(str) :
+fmt.hexDword:
   movzx esi, al
   and esi, 0Fh
   mov ch, [fmt.hexDigits + esi]
@@ -122,7 +145,9 @@ fmt.hexDword: ; eax : ecx(strLen) esi(str) :
   mov ecx, 8
 ret
 
-fmt.dec: ; eax : ecx(strLen) esi(str) : eax(0) edx(0)
+;;; Format a double-word in decimal.
+;;; eax : ecx(strLen) esi(str) : eax(0) edx(0)
+fmt.dec:
   test eax, eax
   jnz .nz
   mov ecx, 1
@@ -154,7 +179,12 @@ fmt.dec: ; eax : ecx(strLen) esi(str) : eax(0) edx(0)
   sub ecx, esi
 ret
 
-fmt.fmt: ; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
+;;; Format a string with values from the stack.
+;;; Format specifiers are of the form "%rsn", where "r" is the radix one of
+;;; "bhd", "s" is the size one of "bwd", and "n" is the position from the top
+;;; of the stack 0-9. "%" can be escaped with "%%".
+;;; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
+fmt.fmt:
   mov edi, fmt.fmtStr
 
   .for:
@@ -216,7 +246,9 @@ fmt.fmt: ; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
   sub ecx, esi
 ret
 
-fmt.printBuffers: ; : : ax ecx(0) edx esi edi
+;;; Print the formatting buffers.
+;;; : : ax ecx(0) edx esi edi
+fmt.printBuffers:
   mov esi, fmt.intStr
   mov ecx, (fmt.intStr.$ - fmt.intStr) / 4
   call diag.printMem
