@@ -9,21 +9,6 @@ extern vga.attribute
 %include "write.mac"
 %include "dev/vga.mac"
 
-Flags:
-  .PAGE_ALIGN_MODS: equ 0000_0001b
-  .MEM: equ 0000_0010b
-  .VBE: equ 0000_0100b
-
-HEADER:
-  .MAGIC: equ 1BADB002h
-  .FLAGS: equ 0
-  .CHECKSUM: equ -(.MAGIC + .FLAGS)
-
-section .mboot
-dd HEADER.MAGIC
-dd HEADER.FLAGS
-dd HEADER.CHECKSUM
-
 section .bss
 core.stack: resb 1000h
 .$:

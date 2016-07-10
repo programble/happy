@@ -4,6 +4,16 @@ extern elf.init, fmt.binDword, fmt.hexDword, str.fromCStr
 %include "lib/fmt.mac"
 %include "write.mac"
 
+HeaderFlags:
+  .PAGE_ALIGN_MODS: equ 0000_0001b
+  .MEM: equ 0000_0010b
+  .VBE: equ 0000_0100b
+
+HEADER:
+  .MAGIC: equ 1BADB002h
+  .FLAGS: equ 0
+  .CHECKSUM: equ -(.MAGIC + .FLAGS)
+
 Flags:
   .MEM: equ 1
   .BOOT_DEVICE: equ 2
@@ -51,6 +61,11 @@ struc Mmap
   .length: resq 1
   .type: resd 1
 endstruc
+
+section .mboot
+dd HEADER.MAGIC
+dd HEADER.FLAGS
+dd HEADER.CHECKSUM
 
 section .data
 mboot.info: dd 0
