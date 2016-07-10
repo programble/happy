@@ -1,5 +1,4 @@
 global com.init, com.writeChar, com.write
-%include "macro.mac"
 
 ; TODO: Actually read the UART manual.
 

@@ -4,7 +4,6 @@ global fmt.dec
 global fmt.fmt
 global fmt.printBuffers
 extern diag.printMem
-%include "macro.mac"
 %include "core.mac"
 %include "write.mac"
 

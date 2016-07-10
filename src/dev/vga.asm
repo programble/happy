@@ -1,7 +1,6 @@
 global vga.init, vga.blank, vga.writeChar, vga.write
 global vga.buffer, vga.buffer.$, vga.pointer, vga.attribute
-%include "macro.mac"
-%include "vga.mac"
+%include "dev/vga.mac"
 
 absolute vga.BUFFER
 vga.buffer: resb vga.WIDTH * vga.HEIGHT

@@ -5,10 +5,9 @@ extern main.main, fmt.dec, diag.printEflags, diag.printRegs, diag.printStack
 extern kbd.poll, kbd.reset
 extern vga.attribute
 %define _CORE_ASM
-%include "macro.mac"
 %include "core.mac"
 %include "write.mac"
-%include "vga.mac"
+%include "dev/vga.mac"
 
 Flags:
   .PAGE_ALIGN_MODS: equ 0000_0001b

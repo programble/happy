@@ -2,10 +2,9 @@ global main.main, main.clear, main.panic, main.eflags, main.regs, main.stack
 extern vga.attribute, kbd.readLine
 extern elf.stringSymbol
 extern vga.blank, diag.printEflags, diag.printRegs, diag.printStack
-%include "macro.mac"
 %include "core.mac"
-%include "vga.mac"
-%include "fmt.mac"
+%include "dev/vga.mac"
+%include "lib/fmt.mac"
 %include "write.mac"
 
 section .text

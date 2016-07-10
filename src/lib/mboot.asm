@@ -1,8 +1,7 @@
 global mboot.init, mboot.printInfo, mboot.printMmap
 extern elf.init, fmt.binDword, fmt.hexDword, str.fromCStr
-%include "macro.mac"
 %include "core.mac"
-%include "fmt.mac"
+%include "lib/fmt.mac"
 %include "write.mac"
 
 Flags:

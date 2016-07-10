@@ -1,7 +1,6 @@
 global diag.printEflags, diag.printRegs, diag.printSymbol, diag.printStack, diag.printMem
 extern fmt.hexDword, elf.symbolStringOffset
 extern core.boundLower, core.boundUpper, core.stack.$
-%include "macro.mac"
 %include "write.mac"
 
 Eflags:

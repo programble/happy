@@ -1,7 +1,6 @@
 global elf.init, elf.symbolString, elf.symbolStringOffset, elf.stringSymbol
 global elf.printGlobals
 extern str.fromCStr, str.equal?
-%include "macro.mac"
 %include "write.mac"
 
 ShType:

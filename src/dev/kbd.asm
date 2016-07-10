@@ -3,7 +3,6 @@ global kbd.readCode, kbd.readChar, kbd.readLine
 global kbd.printBuffers
 extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
-%include "macro.mac"
 %include "core.mac"
 %include "write.mac"
 

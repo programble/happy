@@ -1,6 +1,5 @@
 global idt.init, idt.setGate
 extern gdt.table, gdt.table.code
-%include "macro.mac"
 %include "core.mac"
 
 Gate:
