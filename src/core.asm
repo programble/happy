@@ -1,15 +1,20 @@
+;;; The beginning and end of the kernel.
+
 global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
+
 extern mboot.init, com.init, vga.init, gdt.init, idt.init, pic.init, kbd.init
 extern main.main, fmt.dec, diag.printEflags, diag.printRegs, diag.printStack
 extern kbd.poll, kbd.reset
 extern vga.attribute
+
 %define _CORE_ASM
 %include "core.mac"
 %include "write.mac"
 %include "dev/vga.mac"
 
 section .bss
+
 core.stack: resb 1000h
   .$:
 
@@ -30,6 +35,7 @@ core.boot:
   call kbd.init
   sti
 
+  .main:
   call main.main
 _panic 'return from main'
 
