@@ -2,11 +2,14 @@
 extern core.panic
 %endif
 
+;;; _panic msg
+;;; : : *
 %macro _panic 1
   [section .rodata]
-  %%panicMessage: db %1, `\n`
-  %%panicMessage.#: equ $ - %%panicMessage
+  %%panicMsg: db %1, `\n`
+  %%panicMsg.#: equ $ - %%panicMsg
 
+  ; Avoid writing out the file name multiple times.
   %ifndef _PANIC_FILE
     %%panicFile: db __FILE__, ':'
     %%panicFile.#: equ $ - %%panicFile
@@ -19,14 +22,16 @@ extern core.panic
   pushad
   pushfd
   mov eax, __LINE__
-  mov ecx, %%panicMessage.#
+  mov ecx, %%panicMsg.#
   mov edx, _PANIC_FILE_LEN
-  mov esi, %%panicMessage
+  mov esi, %%panicMsg
   mov edi, _PANIC_FILE
   call core.panic
   nop
 %endmacro
 
+;;; _panicc cc, msg
+;;; : : *
 %macro _panicc 2
   j%-1 %%panicElse
   _panic %2

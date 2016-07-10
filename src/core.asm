@@ -11,12 +11,16 @@ extern vga.attribute
 
 section .bss
 core.stack: resb 1000h
-.$:
+  .$:
 
 section .text
-core.boot: ; eax(magic) ebx(info) : : *
+
+;;; Kernel entry point.
+;;; eax(mbootMagic) ebx(mbootInfo) : : *
+core.boot:
   mov esp, core.stack.$
   push dword 0DEADBEEFh
+
   call mboot.init
   call com.init
   call vga.init
@@ -25,27 +29,32 @@ core.boot: ; eax(magic) ebx(info) : : *
   call pic.init
   call kbd.init
   sti
+
   call main.main
 _panic 'return from main'
 
-core.halt: ; : : *
+;;; Halt forever.
+;;; : : *
+core.halt:
   cli
   hlt
 jmp core.halt
 
-core.panic: ; eax(line) ecx(msgLen) edx(fileLen) esi(msg) edi(file) [esp+8](pushad) [esp+4](pushfd) : : *
+;;; Display debug information from _panic macro and reset on keypress.
+;;; eax(line) ecx(msgLen) edx(fileLen) esi(msg) edi(file) [esp+8](pushad) [esp+4](pushfd) : : *
+core.panic:
   _push eax, edx, edi, ecx, esi
 
   mov byte [vga.attribute], vga.Color.RED << vga.Color.FG
   _write `\n== PANIC ==\n`
 
-  _pop ecx, esi
+  _pop ecx, esi ; message
   _write
 
-  _pop ecx, esi
+  _pop ecx, esi ; file
   _write
 
-  pop eax
+  pop eax ; line
   call fmt.dec
   _write
 
