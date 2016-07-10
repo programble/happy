@@ -2,6 +2,7 @@
 extern core.panic
 %endif
 
+;;; Panic.
 ;;; _panic msg
 ;;; : : *
 %macro _panic 1
@@ -30,6 +31,7 @@ extern core.panic
   nop
 %endmacro
 
+;;; Conditional panic.
 ;;; _panicc cc, msg
 ;;; : : *
 %macro _panicc 2

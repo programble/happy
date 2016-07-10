@@ -1,3 +1,4 @@
+;;; Push many.
 %macro _push 1-*
   %rep %0
     push %1
@@ -5,6 +6,7 @@
   %endrep
 %endmacro
 
+;;; Pop many in reverse.
 %macro _pop 1-*
   %rep %0
     %rotate -1
@@ -12,17 +14,25 @@
   %endrep
 %endmacro
 
-%macro _out 2 ; : : al dx
+;;; Write to word-sized port.
+;;; _out port, byte
+;;; : : al dx
+%macro _out 2
   mov dx, %1
   mov al, %2
   out dx, al
 %endmacro
 
-%macro _in 1 ; : al(byte) : dx
+;;; Read from word-sized port.
+;;; _in port
+;;; : al(byte) : dx
+%macro _in 1
   mov dx, %1
   in al, dx
 %endmacro
 
+;;; Place a string in .rodata and move its length and pointer into registers.
+;;; _string len, ptr, str
 %macro _string 3+
   [section .rodata]
   %%string: db %3
@@ -33,6 +43,9 @@
   mov %2, %%string
 %endmacro
 
+;;; Place a string in .rodata and move its length and pointer into ecx and esi.
+;;; _string str
+;;; : : ecx(strLen) esi(str)
 %macro _string 1
   _string ecx, esi, %1
 %endmacro
