@@ -55,10 +55,10 @@ core.panic:
   mov byte [vga.attribute], vga.Color.RED << vga.Color.FG
   _write `\n== PANIC ==\n`
 
-  _pop ecx, esi ; message
+  _rpop ecx, esi ; message
   _write
 
-  _pop ecx, esi ; file
+  _rpop ecx, esi ; file
   _write
 
   pop eax ; line

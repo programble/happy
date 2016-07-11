@@ -105,7 +105,7 @@ diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
   _write
   _writeChar '+'
 
-  _pop ecx, esi
+  _rpop ecx, esi
   _write
 
   .ret:
@@ -169,7 +169,7 @@ diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
     .printable:
     _push ecx, esi
     _writeChar
-    _pop ecx, esi
+    _rpop ecx, esi
   loop .for
 
   push esi

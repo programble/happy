@@ -192,7 +192,7 @@ kbd.readLine: ; : ecx(lineLen) esi(line) : eax edx edi
     .write:
     _push ecx, edi
     _writeChar
-    _pop ecx, edi
+    _rpop ecx, edi
   cmp edi, kbd.line.$
   jb .while
 

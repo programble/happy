@@ -6,8 +6,24 @@
   %endrep
 %endmacro
 
-;;; Pop many in reverse.
+;;; Push many in reverse.
+%macro _rpush 1-*
+  %rep %0
+    %rotate -1
+    push %1
+  %endrep
+%endmacro
+
+;;; Pop many.
 %macro _pop 1-*
+  %rep %0
+    pop %1
+    %rotate 1
+  %endrep
+%endmacro
+
+;;; Pop many in reverse.
+%macro _rpop 1-*
   %rep %0
     %rotate -1
     pop %1

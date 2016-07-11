@@ -56,7 +56,7 @@ vga.write: ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
     jb .lods
     _push eax, ecx, esi, edi
     call vga.scroll
-    _pop eax, ecx, esi, edi
+    _rpop eax, ecx, esi, edi
     sub edi, vga.WIDTH
 
     .lods:
@@ -93,7 +93,7 @@ vga.write: ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
     div ecx
     mul ecx
     lea edi, [eax + vga.buffer]
-    _pop eax, ecx
+    _rpop eax, ecx
     jmp .next
 
     .caseElse:

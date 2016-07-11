@@ -236,7 +236,7 @@ fmt.fmt:
 
     .copy:
     rep movsb
-    _pop ecx, esi
+    _rpop ecx, esi
   sub ecx, 3
   jnz .for
 

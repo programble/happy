@@ -17,7 +17,7 @@ extern vga.writeChar, vga.write
 %macro _write 0 ; ecx(strLen) esi(str) : : ax ecx(0) edx esi edi
   _push ecx, esi
   call com.write
-  _pop ecx, esi
+  _rpop ecx, esi
   call vga.write
 %endmacro
 
