@@ -4,13 +4,13 @@ global core.boot, core.halt, core.panic
 global core.stack, core.stack.$
 
 extern mboot.init, com.init, vga.init, gdt.init, idt.init, pic.init, kbd.init
-extern main.main, fmt.dec, diag.printEflags, diag.printRegs, diag.printStack
+extern main.main, text.writeNl, text.write, text.writeFmt
+extern diag.printEflags, diag.printRegs, diag.printStack
 extern kbd.poll, kbd.reset
 extern vga.attribute
 
 %define _CORE_ASM
 %include "core.mac"
-%include "write.mac"
 %include "dev/vga.mac"
 
 section .bss
@@ -53,26 +53,28 @@ core.panic:
   _push eax, edx, edi, ecx, esi
 
   mov byte [vga.attribute], vga.Color.RED << vga.Color.FG
-  _write `\n== PANIC ==\n`
+  _string `\n== PANIC ==\n`
+  call text.write
 
   _rpop ecx, esi ; message
-  _write
+  call text.write
 
   _rpop ecx, esi ; file
-  _write
+  call text.write
 
-  pop eax ; line
-  call fmt.dec
-  _write
+  _string '%dd0' ; line
+  call text.writeFmt
+  add esp, 4
 
-  _write `\neflags `
+  _string `\neflags `
+  call text.write
   mov eax, [esp + 4]
   call diag.printEflags
-  _writeChar `\n`
+  call text.writeNl
 
   lea ebx, [esp + 8]
   call diag.printRegs
-  _writeChar `\n`
+  call text.writeNl
 
   pop eax
   add esp, 24h

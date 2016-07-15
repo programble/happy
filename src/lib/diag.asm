@@ -1,7 +1,7 @@
 global diag.printEflags, diag.printRegs, diag.printSymbol, diag.printStack, diag.printMem
 extern fmt.hexDword, elf.symbolStringOffset
+extern text.writeChar, text.writeNl, text.write, text.writeFmt
 extern core.boundLower, core.boundUpper, core.stack.$
-%include "write.mac"
 
 Eflags:
   .CF: equ 0000_0000_0000_0000_0000_0000_0000_0001b
@@ -36,13 +36,14 @@ endstruc
 section .text
 diag.printEflags: ; eax(pushfd) : : ax ecx(0) edx esi edi
   push eax
-  call fmt.hexDword
-  _write
+  _string '%hd0'
+  call text.writeFmt
 
   %macro _flag 2
     test dword [esp], Eflags.%1
     jz %%flagElse
-    _write %2
+    _string %2
+    call text.write
     %%flagElse:
   %endmacro
 
@@ -68,10 +69,10 @@ ret
 
 diag.printRegs: ; ebx(pushad) : : eax ecx(0) edx esi edi
   %macro _reg 2
-    _write %1
-    mov eax, [ebx + Pushad.%2]
-    call fmt.hexDword
-    _write
+    _string {%1, '%hd0'}
+    push dword [ebx + Pushad.%2]
+    call text.writeFmt
+    add esp, 4
   %endmacro
 
   _reg 'eax ', eax
@@ -86,9 +87,8 @@ ret
 
 diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
   push eax
-  call fmt.hexDword
-  _write
-  _writeChar ' '
+  _string '%hd0 '
+  call text.writeFmt
 
   pop eax
   cmp eax, core.boundLower
@@ -100,13 +100,12 @@ diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
   test ecx, ecx
   jz .ret
 
-  _push ecx, esi
-  call fmt.hexDword
-  _write
-  _writeChar '+'
+  _push ecx, esi, eax
+  _string '%hd0+'
+  call text.writeFmt
 
-  _rpop ecx, esi
-  _write
+  _rpop ecx, esi, eax
+  call text.write
 
   .ret:
 ret
@@ -115,15 +114,15 @@ diag.printStack: ; esp(stack) : : eax ecx(0) edx esi edi
   mov ebp, esp
 
   .while:
-    mov eax, ebp
-    call fmt.hexDword
-    _write
-    _writeChar ' '
+    push ebp
+    _string '%hd0 '
+    call text.writeFmt
+    add esp, 4
 
     mov eax, [ebp]
     call diag.printSymbol
 
-    _writeChar `\n`
+    call text.writeNl
     add ebp, 4
   cmp ebp, core.stack.$
   jb .while
@@ -136,18 +135,17 @@ diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
 
   .printAddr:
   push esi
-  mov eax, esi
-  call fmt.hexDword
-  _write
-  _write ': '
+  _string '%hd0: '
+  call text.writeFmt
   pop esi
 
   .printDword:
   lodsd
   push esi
-  call fmt.hexDword
-  _write
-  _writeChar ' '
+  _string '%hd0 '
+  push eax
+  call text.writeFmt
+  add esp, 4
   pop esi
 
   test esi, 0Fh
@@ -168,12 +166,12 @@ diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
 
     .printable:
     _push ecx, esi
-    _writeChar
+    call text.writeChar
     _rpop ecx, esi
   loop .for
 
   push esi
-  _writeChar `\n`
+  call text.writeNl
   pop esi
 
   .next:

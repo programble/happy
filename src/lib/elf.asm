@@ -1,7 +1,7 @@
 global elf.init, elf.symbolString, elf.symbolStringOffset, elf.stringSymbol
 global elf.printGlobals
 extern str.fromCStr, str.equal?
-%include "write.mac"
+extern text.write, text.writeNl
 
 ShType:
   .NULL: equ 0
@@ -190,8 +190,8 @@ elf.printGlobals: ; : : ax ecx(0) edx ebx esi edi
     mov esi, [ebx + Sym.name]
     add esi, [elf.strtab]
     call str.fromCStr
-    _write
-    _writeChar ' '
+    call text.write
+    call text.writeNl
 
     .next:
     add ebx, Sym_size

@@ -2,14 +2,13 @@
 
 global main.main, main.clear, main.panic, main.eflags, main.regs
 
+extern text.writeNl, text.write, text.writeLn, text.writeFmt
 extern vga.attribute, kbd.readLine
 extern elf.stringSymbol
 extern vga.blank, diag.printEflags, diag.printRegs, diag.printStack
 
 %include "core.mac"
 %include "dev/vga.mac"
-%include "lib/fmt.mac"
-%include "write.mac"
 
 section .text
 
@@ -17,24 +16,29 @@ section .text
 ;;; table.
 ;;; : : *
 main.main:
-  _write `You'll never be %hd0 %hd1.\n`, 0DEADBEEFh, 0CAFEBABEh
+  _string `You'll never be %hd0 %hd1.\n`
+  _rpush 0DEADBEEFh, 0CAFEBABEh
+  call text.writeFmt
+  add esp, 8
 
   .prompt:
-    _writeChar '>'
+    _string '> '
+    call text.write
     mov byte [vga.attribute], vga.Color.GRAY | vga.Color.BRIGHT
-    _writeChar ' '
+
     call kbd.readLine
     mov byte [vga.attribute], vga.Color.GRAY
 
     call elf.stringSymbol
     test eax, eax
     jnz .call
-    _write `?\n`
+    _string '?'
+    call text.writeLn
     jmp .prompt
 
     .call:
     call eax
-    _writeChar `\n`
+    call text.writeNl
   jmp .prompt
 
 ;;; Clear the screen and skip the newline of the main loop.

@@ -6,10 +6,9 @@ global fmt.dec
 global fmt.fmt
 global fmt.printBuffers
 
-extern diag.printMem
+extern diag.printMem, text.writeNl
 
 %include "core.mac"
-%include "write.mac"
 
 section .rodata
 
@@ -252,7 +251,7 @@ fmt.printBuffers:
   mov esi, fmt.intStr
   mov ecx, (fmt.intStr.$ - fmt.intStr) / 4
   call diag.printMem
-  _writeChar `\n`
+  call text.writeNl
 
   mov esi, fmt.fmtStr
   mov ecx, (fmt.fmtStr.$ - fmt.fmtStr) / 4

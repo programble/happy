@@ -1,8 +1,6 @@
 global mboot.init, mboot.printInfo, mboot.printMmap
-extern elf.init, fmt.binDword, fmt.hexDword, str.fromCStr
+extern elf.init, str.fromCStr, text.write, text.writeFmt
 %include "core.mac"
-%include "lib/fmt.mac"
-%include "write.mac"
 
 HeaderFlags:
   .PAGE_ALIGN_MODS: equ 0000_0001b
@@ -88,17 +86,16 @@ jmp elf.init
 mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   mov ebp, [mboot.info]
 
-  _write `flags\t\t`
+  _string `flags\t\t%bd0`
   mov eax, [ebp + Info.flags]
   push eax
-  call fmt.binDword
-  _write
+  call text.writeFmt
 
   %macro _field 2
-    _write %1
-    mov eax, [ebp + Info.%2]
-    call fmt.hexDword
-    _write
+    _string {%1, '%hd0'}
+    push dword [ebp + Info.%2]
+    call text.writeFmt
+    add esp, 4
   %endmacro
 
   .mem:
@@ -115,10 +112,11 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  _write `\ncmdline\t\t`
+  _string `\ncmdline\t\t`
+  call text.write
   mov esi, [ebp + Info.cmdline]
   call str.fromCStr
-  _write
+  call text.write
 
   .mods:
   test dword [esp], Flags.MODS
@@ -154,10 +152,11 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .bootLoaderName:
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apmTable
-  _write `\nbootLoaderName\t`
+  _string `\nbootLoaderName\t`
+  call text.write
   mov esi, [ebp + Info.bootLoaderName]
   call str.fromCStr
-  _write
+  call text.write
 
   .apmTable:
   test dword [esp], Flags.APM_TABLE
@@ -188,14 +187,17 @@ mboot.printMmap: ; : : eax ecx(0) edx ebx ebp esi edi
   push eax
   mov ebp, [ebp + Info.mmapAddr]
 
-  _write `baseAddr\t\tlength\t\t\ttype\n`
+  _string `baseAddr\t\tlength\t\t\ttype\n`
+  call text.write
   .while:
-    _write `%hd0%hd1\t%hd2%hd3\t%hd4\n`, \
-      dword [ebp + Mmap.baseAddr + 4], \
+    _string `%hd0%hd1\t%hd2%hd3\t%hd4\n`
+    _rpush dword [ebp + Mmap.baseAddr + 4], \
       dword [ebp + Mmap.baseAddr], \
       dword [ebp + Mmap.length + 4], \
       dword [ebp + Mmap.length], \
       dword [ebp + Mmap.type]
+    call text.writeFmt
+    add esp, 14h
     add ebp, [ebp + Mmap.size]
     add ebp, 4
   cmp ebp, [esp]

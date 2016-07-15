@@ -1,10 +1,12 @@
 global kbd.init, kbd.poll, kbd.reset
 global kbd.readCode, kbd.readChar, kbd.readLine
 global kbd.printBuffers
-extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt, diag.printMem
+
+extern idt.setGate, pic.unmask, pic.eoiMaster, core.halt
+extern text.writeChar, text.writeNl, diag.printMem
 extern qwerty.map, qwerty.map.shift, qwerty.map.ctrl
+
 %include "core.mac"
-%include "write.mac"
 
 Port:
   .DATA: equ 60h
@@ -191,14 +193,14 @@ kbd.readLine: ; : ecx(lineLen) esi(line) : eax edx edi
 
     .write:
     _push ecx, edi
-    _writeChar
+    call text.writeChar
     _rpop ecx, edi
   cmp edi, kbd.line.$
   jb .while
 
   .break:
   push ecx
-  _writeChar `\n`
+  call text.writeNl
   pop ecx
   mov esi, kbd.line
 ret
@@ -207,7 +209,7 @@ kbd.printBuffers: ; : : ax ecx(0) edx esi edi
   mov esi, kbd.buffer
   mov ecx, kbd.buffer.# / 4
   call diag.printMem
-  _writeChar `\n`
+  call text.writeNl
 
   mov esi, kbd.line
   mov ecx, (kbd.line.$ - kbd.line) / 4
