@@ -182,7 +182,8 @@ ret
 ;;; Format a string with values from the stack.
 ;;; Format specifiers are of the form "%rsn", where "r" is the radix one of
 ;;; "bhd", "s" is the size one of "bwd", and "n" is the position from the top
-;;; of the stack 0-9. "%" can be escaped with "%%".
+;;; of the stack 0-9. The format specifier "cs" can be used for C strings, and
+;;; "ss" for sized strings. "%" can be escaped with "%%".
 ;;; ecx(fmtLen) esi(fmt) [esp+4...] : ecx(strLen) esi(str) : eax edx edi
 fmt.fmt:
   mov edi, fmt.fmtStr
@@ -223,17 +224,17 @@ fmt.fmt:
     %endmacro
 
     _push ecx, esi, .copy
-    _case 'bb', fmt.binByte
-    _case 'bw', fmt.binWord
+    _case 'ss', .str
+    _case 'cs', .cStr
+    _case 'hd', fmt.hexDword
+    _case 'dd', fmt.dec
     _case 'bd', fmt.binDword
     _case 'hb', fmt.hexByte
+    _case 'bb', fmt.binByte
     _case 'hw', fmt.hexWord
-    _case 'hd', fmt.hexDword
+    _case 'bw', fmt.binWord
     _case 'db', fmt.dec
     _case 'dw', fmt.dec
-    _case 'dd', fmt.dec
-    _case 'cs', .cStr
-    _case 'ss', .str
     _panic 'invalid format specifier'
 
     .copy:
