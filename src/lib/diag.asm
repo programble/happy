@@ -101,11 +101,9 @@ diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
   jz .ret
 
   _push ecx, esi, eax
-  _string '%hd0+'
+  _string '%hd0+%ss1'
   call text.writeFmt
-
-  _rpop ecx, esi, eax
-  call text.write
+  add esp, 0Ch
 
   .ret:
 ret

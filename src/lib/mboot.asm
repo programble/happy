@@ -112,11 +112,10 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .cmdline:
   test dword [esp], Flags.CMDLINE
   jz .mods
-  _string `\ncmdline\t\t`
-  call text.write
-  mov esi, [ebp + Info.cmdline]
-  call str.fromCStr
-  call text.write
+  _string `\ncmdline\t\t%cs0`
+  push dword [ebp + Info.cmdline]
+  call text.writeFmt
+  add esp, 4
 
   .mods:
   test dword [esp], Flags.MODS
@@ -152,11 +151,10 @@ mboot.printInfo: ; : : eax ecx(0) edx ebx ebp esi edi
   .bootLoaderName:
   test dword [esp], Flags.BOOT_LOADER_NAME
   jz .apmTable
-  _string `\nbootLoaderName\t`
-  call text.write
-  mov esi, [ebp + Info.bootLoaderName]
-  call str.fromCStr
-  call text.write
+  _string `\nbootLoaderName\t%cs0`
+  push dword [ebp + Info.bootLoaderName]
+  call text.writeFmt
+  add esp, 4
 
   .apmTable:
   test dword [esp], Flags.APM_TABLE

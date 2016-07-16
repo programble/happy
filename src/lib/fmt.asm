@@ -6,6 +6,7 @@ global fmt.dec
 global fmt.fmt
 global fmt.printBuffers
 
+extern str.fromCStr
 extern diag.printMem, text.writeNl
 
 %include "core.mac"
@@ -231,6 +232,8 @@ fmt.fmt:
     _case 'db', fmt.dec
     _case 'dw', fmt.dec
     _case 'dd', fmt.dec
+    _case 'cs', .cStr
+    _case 'ss', .str
     _panic 'invalid format specifier'
 
     .copy:
@@ -243,6 +246,18 @@ fmt.fmt:
   mov ecx, edi
   mov esi, fmt.fmtStr
   sub ecx, esi
+ret
+
+.cStr:
+  mov esi, eax
+jmp str.fromCStr
+
+.str:
+  xor ecx, ecx
+  mov cl, [esi - 1]
+  sub cl, '/'
+  mov ecx, [esp + ecx * 4 + 10h]
+  mov esi, eax
 ret
 
 ;;; Print the formatting buffers.
