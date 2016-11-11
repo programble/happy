@@ -1,7 +1,7 @@
 global elf.init, elf.symbolString, elf.symbolStringOffset, elf.stringSymbol
 global elf.printGlobals
 extern str.fromCStr, str.equal?
-extern text.write, text.writeNl
+extern text.writeFmt
 
 ShType:
   .NULL: equ 0
@@ -176,26 +176,27 @@ elf.stringSymbol: ; ecx(strLen) esi(str) : eax(value) : ecx ebx edx esi edi
   .ret:
 ret
 
-elf.printGlobals: ; : : ax ecx(0) edx ebx esi edi
-  mov ebx, [elf.symtab]
-  test ebx, ebx
+elf.printGlobals: ; : : eax ecx(0) edx ebx esi edi ebp
+  mov ebp, [elf.symtab]
+  test ebp, ebp
   jz .ret
 
   .while:
-    mov al, [ebx + Sym.info]
+    mov al, [ebp + Sym.info]
     shr al, 4
     cmp al, SymBind.GLOBAL
     jne .next
 
-    mov esi, [ebx + Sym.name]
+    mov esi, [ebp + Sym.name]
     add esi, [elf.strtab]
-    call str.fromCStr
-    call text.write
-    call text.writeNl
+    push esi
+    _string '%cs0 '
+    call text.writeFmt
+    add esp, 4
 
     .next:
-    add ebx, Sym_size
-  cmp ebx, [elf.symtab.$]
+    add ebp, Sym_size
+  cmp ebp, [elf.symtab.$]
   jb .while
 
   .ret:
