@@ -1,8 +1,14 @@
+;;; Diagnostic functions.
+
 global diag.printEflags, diag.printRegs, diag.printSymbol, diag.printStack, diag.printMem
-extern fmt.hexDword, elf.symbolStringOffset
+
+extern fmt.hexDword
+extern elf.symbolStringOffset
 extern text.writeChar, text.writeNl, text.write, text.writeFmt
 extern core.boundLower, core.boundUpper, core.stack.$
 
+;;; Processor flags.
+;;; TODO: Citation.
 Eflags:
   .CF: equ 0000_0000_0000_0000_0000_0000_0000_0001b
   .PF: equ 0000_0000_0000_0000_0000_0000_0000_0100b
@@ -22,6 +28,7 @@ Eflags:
   .VIP: equ 0000_0000_0001_0000_0000_0000_0000_0000b
   .ID: equ 0000_0000_0010_0000_0000_0000_0000_0000b
 
+;;; Order in which register values are pushed with PUSHAD.
 struc Pushad
   .edi: resd 1
   .esi: resd 1
@@ -34,7 +41,10 @@ struc Pushad
 endstruc
 
 section .text
-diag.printEflags: ; eax(pushfd) : : ax ecx(0) edx esi edi
+
+;;; Print flags from PUSHFD.
+;;; eax(pushfd) : : eax ecx(0) edx esi edi
+diag.printEflags:
   push eax
   _string '%hd0'
   call text.writeFmt
@@ -67,7 +77,9 @@ diag.printEflags: ; eax(pushfd) : : ax ecx(0) edx esi edi
   add esp, 4
 ret
 
-diag.printRegs: ; ebx(pushad) : : eax ecx(0) edx esi edi
+;;; Print registers from PUSHAD.
+;;; ebx(pushad) : : eax ecx(0) edx esi edi
+diag.printRegs:
   %macro _reg 2
     push dword [ebx + Pushad.%2]
     _string {%1, '%hd0'}
@@ -85,7 +97,9 @@ diag.printRegs: ; ebx(pushad) : : eax ecx(0) edx esi edi
   _reg ' edi ', edi
 ret
 
-diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
+;;; Look up and print the ELF symbol associated with a value.
+;;; eax(value) : : eax ecx(0) edx esi edi
+diag.printSymbol:
   push eax
   _string '%hd0 '
   call text.writeFmt
@@ -108,7 +122,9 @@ diag.printSymbol: ; eax(value) : : eax ecx(0) edx esi edi
   .ret:
 ret
 
-diag.printStack: ; esp(stack) : : eax ecx(0) edx esi edi
+;;; Print the values on the stack with corresponding ELF symbols.
+;;; esp(stack) : : eax ecx(0) edx esi edi
+diag.printStack:
   mov ebp, esp
 
   .while:
@@ -126,7 +142,9 @@ diag.printStack: ; esp(stack) : : eax ecx(0) edx esi edi
   jb .while
 ret
 
-diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
+;;; Print a hexdump of a region of memory.
+;;; esi(mem) ecx(memLen) : : eax ecx(0) edx esi edi
+diag.printMem:
   push ecx
   test esi, 0Fh
   jnz .printDword
