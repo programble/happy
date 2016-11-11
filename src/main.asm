@@ -21,6 +21,16 @@ main.main:
   call text.writeFmt
   add esp, 8
 
+  _string { \
+    `Some suggestions:\n`, \
+    `\tmain.regs main.eflags diag.printStack\n`, \
+    `\tmboot.printInfo mboot.printMmap\n`, \
+    `\tfmt.printBuffers kbd.printBuffers\n`, \
+    `\tmain.panic kbd.reset\n`, \
+    `\telf.printGlobals\n`, \
+  }
+  call text.writeLn
+
   .prompt:
     _string '> '
     call text.write
