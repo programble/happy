@@ -69,8 +69,8 @@ ret
 
 diag.printRegs: ; ebx(pushad) : : eax ecx(0) edx esi edi
   %macro _reg 2
-    _string {%1, '%hd0'}
     push dword [ebx + Pushad.%2]
+    _string {%1, '%hd0'}
     call text.writeFmt
     add esp, 4
   %endmacro
@@ -140,8 +140,8 @@ diag.printMem: ; esi(mem) ecx(memLen) : : ax ecx(0) edx esi edi
   .printDword:
   lodsd
   push esi
-  _string '%hd0 '
   push eax
+  _string '%hd0 '
   call text.writeFmt
   add esp, 4
   pop esi
